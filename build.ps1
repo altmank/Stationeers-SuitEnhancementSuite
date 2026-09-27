@@ -76,7 +76,7 @@ if ((Test-Path $thumbPath) -and (Get-Item $thumbPath).Length -gt 1MB) {
 Write-Host "Staged $package ($($description.Length) description characters)"
 
 if ($Deploy) {
-    # A running game holds the old DLL and keeps running it; LU may be playing.
+    # A running game holds the old DLL and keeps running it; the player may be in game.
     if (-not $Force -and (Get-Process -Name 'rocketstation' -ErrorAction SilentlyContinue)) {
         throw 'Stationeers is running: close the game before deploying.'
     }
