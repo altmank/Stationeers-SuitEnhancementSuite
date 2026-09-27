@@ -90,10 +90,15 @@ def main():
     tmp = a.save + ".tmp"
     with zipfile.ZipFile(tmp, "w") as z:
         for i in infos:
-            z.writestr(i, new.encode("utf-8") if i.filename == "world.xml" else data[i.filename], compress_type=i.compress_type)
+            # Fresh headers: reusing the old ZipInfo keeps its ZIP64 extra field with the OLD sizes, and the game
+            # then refuses the save ("compressed size mismatch").
+            fresh = zipfile.ZipInfo(i.filename, date_time=i.date_time)
+            fresh.compress_type = zipfile.ZIP_DEFLATED
+            z.writestr(fresh, new.encode("utf-8") if i.filename == "world.xml" else data[i.filename])
     with zipfile.ZipFile(tmp) as z:
         assert z.testzip() is None
         assert z.read("world.xml").decode("utf-8") == new
+        assert not any(i.extra for i in z.infolist()), "stale zip extra fields"
     os.replace(tmp, a.save)
     open(marker, "w").close()
     print("  written")
