@@ -9,18 +9,19 @@ using UnityEngine;
 namespace SuitEnhancementSuite;
 
 /// <summary>
-/// Feeds and waters every living player from the Water and Food slots of the suit they wear. Runs on the simulation
-/// authority only (host or dedicated server); the game syncs the resulting nutrition, hydration and item quantities.
+/// Feeds, waters and relieves every living player from the Water, Food and Waste slots of the suit they wear, and
+/// refills those slots from the player's inventory. Runs on the simulation authority only (host or dedicated server),
+/// on the main thread; the game syncs the resulting needs, item quantities and moves.
 /// </summary>
-internal sealed class AutoConsumer(AutoConsumeSettings settings)
+internal sealed class AutoConsumer(AutoConsumeSettings settings, AutoSwapSettings swapSettings)
 {
     public const float PassSeconds = 2f;
 
     private const int PrunePasses = 30;
     private const int MaxReportedFaults = 16;
 
-    private readonly NeedCooldown _waterCooldown = new();
-    private readonly NeedCooldown _foodCooldown = new();
+    private readonly NeedUpkeep[] _upkeeps = [new(NeedSlot.Water), new(NeedSlot.Food), new(NeedSlot.Waste)];
+    private readonly PlayerInventory _player = new();
     private readonly HashSet<string> _reportedFaults = new();
     private int _passes;
 
@@ -38,7 +39,7 @@ internal sealed class AutoConsumer(AutoConsumeSettings settings)
                 if (human == null || human.State != EntityState.Alive) continue;
                 try
                 {
-                    Serve(human, policy, now, cooldown);
+                    Upkeep(human, policy, now, cooldown);
                 }
                 catch (Exception e)
                 {
@@ -46,8 +47,8 @@ internal sealed class AutoConsumer(AutoConsumeSettings settings)
                 }
             }
             if (++_passes % PrunePasses != 0) return;
-            _waterCooldown.Prune(now);
-            _foodCooldown.Prune(now);
+            foreach (var upkeep in _upkeeps)
+                upkeep.Cooldown.Prune(now);
         }
         catch (Exception e)
         {
@@ -55,28 +56,35 @@ internal sealed class AutoConsumer(AutoConsumeSettings settings)
         }
     }
 
-    private void Serve(Human human, ConsumptionPolicy policy, float now, float cooldown)
+    /// <summary>Per need: refill first, so a freshly swapped-in item can be used in the same pass.</summary>
+    private void Upkeep(Human human, ConsumptionPolicy policy, float now, float cooldown)
     {
-        var worn = human.SuitSlot?.Get();
-        if (worn == null || worn.Slots == null) return;
-        Serve(NeedSlot.Water, _waterCooldown, worn, human, policy, now, cooldown);
-        Serve(NeedSlot.Food, _foodCooldown, worn, human, policy, now, cooldown);
+        if (!_player.Bind(human)) return;
+        foreach (var upkeep in _upkeeps)
+        {
+            if (!_player.TryFindNeedSlot(upkeep.Need, out var slot)) continue;
+            if (swapSettings.IsOn(upkeep.Need))
+                upkeep.Record(AutoSwapper.Refill(upkeep.Need, slot, _player, upkeep.Pick), human, "refilled");
+            upkeep.Record(Serve(upkeep, slot, policy, now, cooldown), human, "used");
+        }
     }
 
-    private static void Serve(NeedSlot need, NeedCooldown cooldown, DynamicThing worn, Human human,
-        ConsumptionPolicy policy, float now, float cooldownSeconds)
+    private StepResult Serve(NeedUpkeep upkeep, Slot slot, ConsumptionPolicy policy, float now, float cooldownSeconds)
     {
-        if (!cooldown.IsReady(human.ReferenceId, now)) return;
-        if (!SuitSlotLayout.TryFindSlot(worn.Slots, need.Key, out var slot)) return;
+        var human = _player.Human;
+        var need = upkeep.Need;
+        if (!upkeep.Cooldown.IsReady(human.ReferenceId, now)) return StepResult.Idle;
         var item = slot.Get();
-        if (item == null || !need.Accepts(item)) return;
+        if (item == null || !need.Accepts(item)) return StepResult.Idle;
         var prefab = item.PrefabName;
         var before = need.Level(human);
-        if (!need.TryServe(item, human, policy, out var amount)) return;
-        cooldown.Start(human.ReferenceId, now, cooldownSeconds);
+        var result = need.Serve(slot, _player, policy, out var amount);
+        if (!result.IsDone) return result;
+        upkeep.Cooldown.Start(human.ReferenceId, now, cooldownSeconds);
         Plugin.Log.LogDebug(string.Format(CultureInfo.InvariantCulture,
             "Auto consume: {0} used {1:0.###} of {2}, {3} {4:0.##} -> {5:0.##}",
             human.DisplayName, amount, prefab, need.NeedName, before, need.Level(human)));
+        return result;
     }
 
     private void ReportOnce(Exception e)

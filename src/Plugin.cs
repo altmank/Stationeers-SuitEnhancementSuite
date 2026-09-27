@@ -13,7 +13,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string PluginGuid = "net.xceled.stationeers.suitenhancementsuite";
     public const string PluginName = "Suit Enhancement Suite";
-    public const string PluginVersion = "0.5.0";
+    public const string PluginVersion = "0.6.0";
 
     internal static ManualLogSource Log;
 
@@ -21,20 +21,23 @@ public sealed class Plugin : BaseUnityPlugin
     {
         Log = Logger;
         var autoConsume = new AutoConsumeSettings(Config);
+        var autoSwap = new AutoSwapSettings(Config);
         var sharedPower = new SharedPowerSettings(Config);
-        Config.SettingChanged += (_, e) => LogChange(e, autoConsume, sharedPower);
+        Config.SettingChanged += (_, e) => LogChange(e, autoConsume, autoSwap, sharedPower);
         SlotIcons.Load();
         ElectricityTickPatch.SharedPower = new SharedPower(sharedPower);
         new Harmony(PluginGuid).PatchAll(typeof(Plugin).Assembly);
-        StartCoroutine(AutoConsumeLoop(new AutoConsumer(autoConsume)));
+        StartCoroutine(AutoConsumeLoop(new AutoConsumer(autoConsume, autoSwap)));
         StartCoroutine(new HygieneHud().Run());
-        Log.LogInfo($"{PluginName} {PluginVersion} loaded: {autoConsume}; {sharedPower}");
+        Log.LogInfo($"{PluginName} {PluginVersion} loaded: {autoConsume}; {autoSwap}; {sharedPower}");
     }
 
-    private static void LogChange(SettingChangedEventArgs e, AutoConsumeSettings autoConsume, SharedPowerSettings sharedPower)
+    private static void LogChange(SettingChangedEventArgs e, AutoConsumeSettings autoConsume, AutoSwapSettings autoSwap,
+        SharedPowerSettings sharedPower)
     {
         var section = e.ChangedSetting.Definition.Section;
         if (section == AutoConsumeSettings.Section) Log.LogInfo($"Settings changed: {autoConsume}");
+        else if (section == AutoSwapSettings.Section) Log.LogInfo($"Settings changed: {autoSwap}");
         else if (section == SharedPowerSettings.Section) Log.LogInfo($"Settings changed: {sharedPower}");
     }
 

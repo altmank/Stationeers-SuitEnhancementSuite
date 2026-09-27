@@ -14,18 +14,21 @@ internal sealed class AutoConsumeSettings
     private static readonly AcceptableValueRange<double> MarginRange = new(0d, 75d);
     private static readonly AcceptableValueRange<double> FallbackRange = new(0d, 50d);
     private static readonly AcceptableValueRange<double> CooldownRange = new(1d, 60d);
+    private static readonly AcceptableValueRange<double> WasteThresholdRange = new(25d, 95d);
 
     private readonly ConfigEntry<bool> _enabled;
     private readonly ConfigEntry<double> _foodMargin;
     private readonly ConfigEntry<double> _waterMargin;
     private readonly ConfigEntry<double> _hungerFallback;
     private readonly ConfigEntry<double> _cooldown;
+    private readonly ConfigEntry<double> _wasteThreshold;
 
     public AutoConsumeSettings(ConfigFile config)
     {
         _enabled = config.Bind(Section, "Enabled", true,
-            "On: the Water and Food slots of the worn suit are eaten and drunk from automatically (host only). " +
-            "Off: both slots are storage only. The slots exist either way. Default: on.");
+            "On: the Water, Food and Waste slots of the worn suit are drunk from, eaten from and used automatically, " +
+            "and refilled from the player's inventory as the Auto Swap section allows (host only). " +
+            "Off: the three slots are storage only and nothing is swapped. The slots exist either way. Default: on.");
         _foodMargin = config.Bind(Section, "Food Top-Off Margin", 1d, new ConfigDescription(
             $"Percent ({Describe(MarginRange)}). Eat from the Food slot once at least this share of the stomach " +
             "(nutrition capacity) is empty. Default 1 keeps the player topped off; 75 eats only below 25 %.",
@@ -41,7 +44,10 @@ internal sealed class AutoConsumeSettings
             "is lost, exactly as when eaten by hand. 0 never wastes. Default 25.", FallbackRange));
         _cooldown = config.Bind(Section, "Cooldown", 3d, new ConfigDescription(
             $"Seconds ({Describe(CooldownRange)}). Minimum real time between two automatic bites of the same need " +
-            "(food or water) for the same player. Default 3.", CooldownRange));
+            "(food, water or waste) for the same player. Default 3.", CooldownRange));
+        _wasteThreshold = config.Bind(Section, "Waste Threshold", 25d, new ConfigDescription(
+            $"Percent ({Describe(WasteThresholdRange)}). Use the Waste slot's bag once the waste need passes this " +
+            "percent. 25 is the earliest the game allows by hand. Default 25.", WasteThresholdRange));
     }
 
     public bool Enabled => _enabled.Value;
@@ -51,13 +57,15 @@ internal sealed class AutoConsumeSettings
     public ConsumptionPolicy Policy() => new(
         Percent.From(_foodMargin.Value),
         Percent.From(_waterMargin.Value),
-        Percent.From(_hungerFallback.Value));
+        Percent.From(_hungerFallback.Value),
+        Percent.From(_wasteThreshold.Value));
 
     public override string ToString()
     {
         var policy = Policy();
         return $"auto consume {(Enabled ? "on" : "off")}, food margin {policy.FoodMargin}, " +
                $"water margin {policy.WaterMargin}, hunger fallback {policy.HungerFallback}, " +
+               $"waste threshold {policy.WasteThreshold}, " +
                $"cooldown {CooldownSeconds.ToString("0.##", CultureInfo.InvariantCulture)} s";
     }
 

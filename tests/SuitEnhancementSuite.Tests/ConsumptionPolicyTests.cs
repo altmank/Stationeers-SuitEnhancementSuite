@@ -8,8 +8,9 @@ public class ConsumptionPolicyTests
     private const float Pumpkin = 50f;
     private const float Tomato = 15f;
 
-    private static ConsumptionPolicy Policy(double foodMargin = 1, double waterMargin = 1, double hungerFallback = 25) =>
-        new(Percent.From(foodMargin), Percent.From(waterMargin), Percent.From(hungerFallback));
+    private static ConsumptionPolicy Policy(double foodMargin = 1, double waterMargin = 1, double hungerFallback = 25,
+        double wasteThreshold = 25) =>
+        new(Percent.From(foodMargin), Percent.From(waterMargin), Percent.From(hungerFallback), Percent.From(wasteThreshold));
 
     private static NeedLevel Nutrition(float current) => new(current, Stomach);
 
@@ -73,4 +74,18 @@ public class ConsumptionPolicyTests
     [Fact]
     public void The_food_margin_does_not_gate_water() =>
         Assert.True(Policy(foodMargin: 75, waterMargin: 1).ShouldDrink(new NeedLevel(3f, 5f)));
+
+    [Theory]
+    [InlineData(0.25f, 25d, false)] // at the floor: the game refuses a bag by hand here too
+    [InlineData(0.26f, 25d, true)]
+    [InlineData(0.20f, 0d, false)] // a threshold below the floor still waits for the floor
+    [InlineData(0.26f, 0d, true)]
+    [InlineData(0.30f, 10d, true)]
+    [InlineData(0.49f, 50d, false)]
+    [InlineData(0.51f, 50d, true)]
+    [InlineData(0.94f, 95d, false)]
+    [InlineData(1.00f, 95d, true)]
+    [InlineData(0f, 25d, false)] // sanitation off in the difficulty settings reads as no need
+    public void Waste_bag_is_used_above_the_threshold_and_never_at_or_below_a_quarter(float ratio, double threshold, bool due) =>
+        Assert.Equal(due, Policy(wasteThreshold: threshold).ShouldRelieve(ratio));
 }

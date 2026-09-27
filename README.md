@@ -1,30 +1,34 @@
 # Suit Enhancement Suite
 
-More room and less busywork in your clothing. Suits get a Water slot and a Food slot that keep you fed and watered
-automatically, the Marine Vest gets eight storage slots, and every uniform gets four storage slots plus two Shared
-Power slots whose batteries keep your suit, tools and other batteries charged.
+More room and less busywork in your clothing. Suits get Water, Food and Waste slots that keep you fed, watered and
+relieved automatically and refill themselves from your inventory, the Marine Vest gets eight storage slots, and every
+uniform gets four storage slots plus two Shared Power slots whose batteries keep your suit, tools and other batteries
+charged.
 
 ## Slots
 
 | Clothing | Added slots | Where |
 | --- | --- | --- |
-| Suits, spacesuits, Hardsuit, Icarus, HARM suit, other armour | Water, Food | after the suit's own slots (Hardsuit: 8 Water, 9 Food) |
-| Marine Vest (body armour) | 8 storage, Water, Food | after its own slots; Water and Food are the last two |
+| Suits, spacesuits, Hardsuit, Icarus, HARM suit, other armour | Water, Food, Waste | after the suit's own slots (Hardsuit: 8 Water, 9 Food, 10 Waste) |
+| Marine Vest (body armour) | 8 storage, Water, Food, Waste | after its own slots; Water, Food and Waste are the last three |
 | Uniforms (jumpsuits) | 4 storage, 2 Shared Power | after the uniform's own slots: storage 4 to 7, Shared Power 8 and 9 |
 
-The added slots always come after the clothing's own slots, so the game's slots keep their usual places.
+The added slots always come after the clothing's own slots, so the game's slots keep their usual places. New slots
+are only ever added at the end (0.6.0 added Waste behind Food), so saves from earlier versions load unchanged.
 
 - **Storage** slots take anything.
 - **Water** takes water bottles and anything else drunk like one.
 - **Food** takes food: meals, bars, canned food, cooked vegetables and raw crops that have nutrition. It refuses seeds,
   eggs, pills and non-food items (the game shows its usual "is not" message).
+- **Waste** takes waste bags that still have room: folded (empty) Waste Bags and part-filled ones. A full bag is
+  refused.
 - **Shared Power** takes any battery cell.
 
-Only the suit you wear is eaten and drunk from, and only the uniform you wear shares power.
+Only the suit you wear is eaten, drunk and relieved from, and only the uniform you wear shares power.
 
 ## Eating and drinking
 
-Every 2 seconds, for every living player:
+Every 2 seconds, for every living player (after any auto-swap, below):
 - **Water:** once at least `Water Top-Off Margin` % of your hydration capacity is empty, the Water slot's bottle is
   drunk until you are full, exactly as drinking by hand would.
 - **Food items** (bars, meals, cans): once at least `Food Top-Off Margin` % of your stomach is empty, you eat just
@@ -37,6 +41,41 @@ Every 2 seconds, for every living player:
 - Raw crops count as raw food: like eating them by hand, they pull your food quality down (low food quality lowers
   your hydration capacity by a quarter). Cooked food keeps it up.
 - Eating and drinking happen through a closed helmet.
+
+## Waste
+
+The game fills your stomach's waste as you drink. Past 25 % you can relieve yourself on a toilet or into a waste bag,
+but not while wearing a suit: on Normal and Stationeer a suit blocks both, and at 100 % you wet the suit, which leaves
+you Soiled (hygiene drops fast, you move slower) until the suit's inside air is emptied (a Suit Storage does it).
+
+The Waste slot does it for you, through the suit:
+- Once your waste passes `Waste Threshold` (25 % by default, the earliest the game allows by hand), the bag in the
+  Waste slot is used exactly as using it by hand would: it takes all your waste, or as much as still fits.
+- A part-filled bag stays in the slot and is used again next time, until it is full (one bag holds two full
+  stomachs).
+- Folded bags: one is unfolded into the slot and filled. If the slot held more than one folded bag, the rest move to
+  a free inventory slot first; with no free slot, nothing happens until you make room (logged).
+- Nothing happens when the difficulty has sanitation off (Creative, Easy): there is no waste.
+- After a use, the need waits `Cooldown` seconds like eating and drinking.
+
+## Auto-swap from your inventory
+
+When the Water, Food or Waste slot is empty, or its item is spent, the mod moves a fresh one in from your
+inventory: hands, the worn suit's and uniform's storage slots, backpack, tool belt, helmet, glasses, and containers
+inside them.
+
+| Slot | Spent means | Fresh one chosen |
+| --- | --- | --- |
+| Water | an empty bottle | the one holding the most water |
+| Food | nothing left, or the food rotted | best food quality first (a meal before canned before cooked before raw crops); within a quality, portioned food (bars, cans, meals) before whole items, because it tops you off exactly; then the smallest whole item (a tomato before a pumpkin, it fits sooner), or the portioned item with the most food left |
+| Waste | a full bag | a part-filled bag first (the fullest, to finish it), then a folded bag (just one is taken from a stack) |
+
+- The spent item goes back where the fresh one came from. If it cannot go there (a stack of folded bags stays
+  behind), it goes into the first free inventory slot, storage before hands. With no room anywhere the swap waits
+  and the log says so once. Nothing is ever deleted or dropped.
+- Each slot has its own switch (`Auto Swap` section), all on by default.
+- Better food quality matters: raw crops pull your food quality down, and low food quality lowers your hydration
+  capacity by a quarter.
 
 ## Shared Power
 
@@ -66,11 +105,20 @@ apply at once (eating and drinking within 2 seconds), no restart.
 
 | Setting (section Auto Consume) | Default | What it does |
 | --- | --- | --- |
-| Enabled | On | Off: the Water and Food slots are plain storage; nothing is eaten or drunk automatically. The slots stay. |
+| Enabled | On | Off: the Water, Food and Waste slots are plain storage; nothing is eaten, drunk, used or swapped automatically. The slots stay. |
 | Food Top-Off Margin | 1 % | Eat once at least this much of the stomach is empty (0 to 75). 75 eats only below 25 %. |
 | Water Top-Off Margin | 1 % | Drink once at least this much of the hydration capacity is empty (0 to 75). |
 | Hunger Fallback | 25 % | Below this nutrition level a whole item is eaten even if part of it is wasted (0 to 50). 0: never waste; a pumpkin then waits until the stomach is empty. |
-| Cooldown | 3 s | Least time between two automatic bites, or two drinks, for one player (1 to 60). |
+| Waste Threshold | 25 % | Use the Waste slot's bag once your waste passes this level (25 to 95). 25 is the earliest the game allows by hand. |
+| Cooldown | 3 s | Least time between two automatic bites, two drinks or two bag uses, for one player (1 to 60). |
+
+| Setting (section Auto Swap) | Default | What it does |
+| --- | --- | --- |
+| Water | On | Refill an empty Water slot, or swap out an empty bottle, from your inventory. |
+| Food | On | Refill an empty Food slot, or swap out rotten food, from your inventory. |
+| Waste | On | Refill an empty Waste slot, or swap out a full bag, from your inventory. |
+
+Auto-swap only runs while Auto Consume `Enabled` is on.
 
 | Setting (section Shared Power) | Default | What it does |
 | --- | --- | --- |
@@ -100,20 +148,25 @@ sit in the uniform's own slots, and your access card and other uniform items sit
 
 ## Multiplayer
 
-Eating, drinking and power sharing run on the host (or dedicated server) only; the game sends the results
-(nutrition, hydration, item quantities, battery charge) to everyone with its own updates. The slots are added by the
+Eating, drinking, waste bags, auto-swap and power sharing run on the host (or dedicated server) only; the game sends
+the results (nutrition, hydration, waste, item moves and quantities, battery charge) to everyone with its own updates. The slots are added by the
 mod on each machine, so every player needs it. A player without it sees suits, vests and uniforms with missing slots.
 No extra network traffic.
 
 ## Removing it
 
-Take everything out of the added slots first (Water, Food, the vest's and uniforms' storage slots, the Shared Power
-slots), then save. Without the mod those slots do not exist and their contents are lost or land in the wrong slot.
+Take everything out of the added slots first (Water, Food, Waste, the vest's and uniforms' storage slots, the Shared
+Power slots), then save. Without the mod those slots do not exist and their contents are lost or land in the wrong slot.
 
 ## Limits and known gaps
 
 - The Life Functions panel shows the game's own hygiene and waste rows, which the game normally hides.
-- Tested in game (0.5.0): nothing yet.
+- Tested in game (0.6.0): nothing yet.
+- Not yet tested in game (0.6.0): the Waste slot in the right place (Hardsuit 10) with its icon and label; full bags
+  refused; a folded bag unfolded into the slot and filled above 25 % waste; a part-filled bag refilled; a stack of
+  folded bags split (rest moved to storage); a full bag swapped for a folded one from the backpack; an empty water
+  bottle swapped for the fullest one; food swapped in best-quality first; the "no room" warning with a full
+  inventory; each `Auto Swap` switch off; everything on a client.
 - Not yet tested in game (0.5.0): new slot icons and labels; uniform slots in the new order; Shared Power charging the
   suit battery first, then a tool in hand, then a tool on the belt; the emptier Shared Power battery drained first;
   `Charge Suit Battery` off; `Transfer Rate` and `Loss` changed live; charge percentages shown correctly on a client;

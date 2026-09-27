@@ -9,7 +9,7 @@ namespace SuitEnhancementSuite;
 /// <summary>
 /// Adds the extra slots to clothing, always after the clothing's own slots, so the game's slot indices never move.
 /// Saves store each item by slot index, so this order is permanent (tools\slot_layout.json):
-/// suits get Water and Food; body armor gets eight storage slots, then Water and Food; a uniform gets four storage
+/// suits get Water, Food and Waste; body armor gets eight storage slots, then Water, Food and Waste; a uniform gets four storage
 /// slots, then two Shared Power battery slots. Adding is idempotent.
 /// </summary>
 internal static class SuitSlotLayout
@@ -57,6 +57,7 @@ internal static class SuitSlotLayout
                 slots.Add(NewSlot(suit, template, SlotKeys.ArmorStorage(number), Slot.Class.None, icon: null));
         slots.Add(NewSlot(suit, template, SlotKeys.Water, Slot.Class.None, SlotIcons.Water));
         slots.Add(NewSlot(suit, template, SlotKeys.Food, Slot.Class.None, SlotIcons.Food));
+        slots.Add(NewSlot(suit, template, SlotKeys.Waste, Slot.Class.None, SlotIcons.Waste));
         return true;
     }
 

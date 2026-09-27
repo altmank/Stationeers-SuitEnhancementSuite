@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SuitEnhancementSuite;
 
 /// <summary>
-/// Empty-slot icons of the Water, Food and Shared Power slots, embedded from src\Assets. They are drawn like the
+/// Empty-slot icons of the Water, Food, Waste and Shared Power slots, embedded from src\Assets. They are drawn like the
 /// game's own slot icons (96 x 96, 100 pixels per unit). An icon that cannot be read stays null: the slot then shows
 /// its class icon (the battery icon for Shared Power) or none.
 /// </summary>
@@ -17,12 +17,15 @@ internal static class SlotIcons
 
     public static Sprite Food { get; private set; }
 
+    public static Sprite Waste { get; private set; }
+
     public static Sprite SharedPower { get; private set; }
 
     public static void Load()
     {
         Water = LoadEmbedded("SuitEnhancementSuite.Assets.Water.png");
         Food = LoadEmbedded("SuitEnhancementSuite.Assets.Food.png");
+        Waste = LoadEmbedded("SuitEnhancementSuite.Assets.Waste.png");
         SharedPower = LoadEmbedded("SuitEnhancementSuite.Assets.SharedPower.png");
     }
 

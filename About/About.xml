@@ -3,31 +3,45 @@
   <Name>Suit Enhancement Suite</Name>
   <ModID>net.xceled.stationeers.suitenhancementsuite</ModID>
   <Author>XCeled</Author>
-  <Version>0.5.0</Version>
+  <Version>0.6.0</Version>
   <Description>[h1]More room and less busywork in your clothing[/h1]
-Suits get a Water slot and a Food slot that keep you fed and watered automatically. The Marine Vest gets eight storage slots. Every uniform gets four storage slots and two Shared Power slots whose batteries keep your suit, tools and other batteries charged.
+Suits get Water, Food and Waste slots that keep you fed, watered and relieved automatically, and refill themselves from your inventory. The Marine Vest gets eight storage slots. Every uniform gets four storage slots and two Shared Power slots whose batteries keep your suit, tools and other batteries charged.
 
 [hr][/hr]
 [h2]Slots[/h2]
 [table]
 [tr][th]Clothing[/th][th]Added slots[/th][/tr]
-[tr][td]Suits, Hardsuit, Icarus, HARM suit, other armour[/td][td]Water, Food[/td][/tr]
-[tr][td]Marine Vest[/td][td]8 storage, Water, Food[/td][/tr]
+[tr][td]Suits, Hardsuit, Icarus, HARM suit, other armour[/td][td]Water, Food, Waste[/td][/tr]
+[tr][td]Marine Vest[/td][td]8 storage, Water, Food, Waste[/td][/tr]
 [tr][td]Uniforms (jumpsuits)[/td][td]4 storage, 2 Shared Power[/td][/tr]
 [/table]
 [list]
 [*]Added slots always come after the clothing's own slots, so the game's slots keep their usual places.
-[*]Storage slots take anything. Water takes water bottles and drinks that work like one. Food takes meals, bars, canned food, cooked vegetables and raw crops with nutrition; not seeds, eggs, pills or tools. Shared Power takes any battery cell.
+[*]Storage slots take anything. Water takes water bottles and drinks that work like one. Food takes meals, bars, canned food, cooked vegetables and raw crops with nutrition; not seeds, eggs, pills or tools. Waste takes folded and part-filled Waste Bags, not full ones. Shared Power takes any battery cell.
 [/list]
 
 [hr][/hr]
 [h2]Eating and drinking[/h2]
 [list]
-[*]Only the worn suit's Water and Food slots are used, every 2 seconds.
+[*]Only the worn suit's Water, Food and Waste slots are used, every 2 seconds.
 [*]Keeps you topped off: drinks and eats once 1 % of the capacity is free.
 [*]Food items are eaten just up to full. Raw crops and cooked vegetables are eaten one whole item at a time, only when all of it fits; below 25 % nutrition they are eaten anyway.
 [*]Works through a closed helmet.
 [/list]
+
+[hr][/hr]
+[h2]Waste[/h2]
+The game will not let you use a toilet or a waste bag while wearing a suit, and at 100 % waste you wet the suit and end up Soiled. The Waste slot uses its bag for you, through the suit, once your waste passes 25 %, exactly as using the bag by hand would. A part-filled bag stays in the slot and is refilled until full (two full stomachs). A folded bag is unfolded into the slot.
+
+[hr][/hr]
+[h2]Auto-swap[/h2]
+When the Water, Food or Waste slot is empty, or holds an empty bottle, rotten food or a full bag, a fresh item moves in from your hands, storage slots, backpack, tool belt and the containers in them:
+[list]
+[*]Water: the bottle holding the most water.
+[*]Food: the best food quality first (meals, then canned, cooked, raw crops); portioned food before whole items; the smallest whole item first, since it fits sooner.
+[*]Waste: a part-filled bag first, then one folded bag from a stack.
+[/list]
+The spent item goes back where the fresh one came from, or into the first free slot. Nothing is deleted or dropped: with no room, the swap waits. One switch per slot.
 
 [hr][/hr]
 [h2]Shared Power[/h2]
@@ -44,11 +58,13 @@ Within each step the emptiest battery comes first. The Shared Power battery hold
 StationeersLaunchPad config editor, or BepInEx/config/net.xceled.stationeers.suitenhancementsuite.cfg. Changes apply at once.
 [table]
 [tr][th]Setting[/th][th]Default[/th][th]What it does[/th][/tr]
-[tr][td][b]Auto Consume: Enabled[/b][/td][td]On[/td][td]Off: Water and Food are plain storage.[/td][/tr]
+[tr][td][b]Auto Consume: Enabled[/b][/td][td]On[/td][td]Off: Water, Food and Waste are plain storage; nothing is used or swapped.[/td][/tr]
 [tr][td][b]Food Top-Off Margin[/b][/td][td]1 %[/td][td]Eat once this much of the stomach is empty (0 to 75).[/td][/tr]
 [tr][td][b]Water Top-Off Margin[/b][/td][td]1 %[/td][td]Drink once this much of the hydration capacity is empty (0 to 75).[/td][/tr]
 [tr][td][b]Hunger Fallback[/b][/td][td]25 %[/td][td]Below this nutrition a whole crop is eaten even if part is wasted (0 to 50).[/td][/tr]
-[tr][td][b]Cooldown[/b][/td][td]3 s[/td][td]Least time between two bites, or two drinks (1 to 60).[/td][/tr]
+[tr][td][b]Waste Threshold[/b][/td][td]25 %[/td][td]Use the Waste bag once waste passes this (25 to 95).[/td][/tr]
+[tr][td][b]Cooldown[/b][/td][td]3 s[/td][td]Least time between two bites, drinks or bag uses (1 to 60).[/td][/tr]
+[tr][td][b]Auto Swap: Water, Food, Waste[/b][/td][td]On[/td][td]Refill that slot from your inventory.[/td][/tr]
 [tr][td][b]Shared Power: Enabled[/b][/td][td]On[/td][td]Off: the Shared Power slots only hold batteries.[/td][/tr]
 [tr][td][b]Transfer Rate[/b][/td][td]500 W[/td][td]Most each battery receives per power tick (10 to 5000).[/td][/tr]
 [tr][td][b]Loss[/b][/td][td]0 %[/td][td]Share of the energy lost on the way (0 to 90).[/td][/tr]
@@ -57,12 +73,12 @@ StationeersLaunchPad config editor, or BepInEx/config/net.xceled.stationeers.sui
 
 [hr][/hr]
 [h2]Removing it[/h2]
-Take everything out of the added slots (Water, Food, storage, Shared Power) and save first. Without the mod those slots do not exist and their contents are lost or land in the wrong slot.
+Take everything out of the added slots (Water, Food, Waste, storage, Shared Power) and save first. Without the mod those slots do not exist and their contents are lost or land in the wrong slot.
 
 [hr][/hr]
 [h2]Good to know[/h2]
 [list]
-[*]Multiplayer: every player needs the mod, because it adds the slots on each machine; a player without it sees clothing with missing slots. Eating, drinking and charging run on the host, and the game sends the results with its own updates. No extra network traffic.
+[*]Multiplayer: every player needs the mod, because it adds the slots on each machine; a player without it sees clothing with missing slots. Eating, drinking, waste bags, swaps and charging run on the host, and the game sends the results with its own updates. No extra network traffic.
 [*]0.5.0 moved the uniform's storage slots behind its own slots. A uniform saved before that loads with the two groups swapped: open it and drag the items back.
 [/list]
 
@@ -73,6 +89,11 @@ Developed with the use of generative AI, and tokens aren't free. Buy me a coffee
 [url=https://ko-fi.com/xceled]ko-fi.com/xceled[/url]
   </Description>
   <ChangeLog>
+v0.6.0
+- Waste slot on suits and the Marine Vest, after Food (Hardsuit: slot 10); no existing slot moves. Takes folded and part-filled Waste Bags and uses them for you, through the suit, once your waste passes 25 %. New setting Waste Threshold.
+- Auto-swap: an empty Water, Food or Waste slot, an empty bottle, rotten food or a full bag is replaced from your inventory (the fullest water, the best food, a part-filled bag before a folded one). The spent item goes back where the fresh one came from or to a free slot. New Auto Swap section: Water, Food, Waste, all on.
+- New Waste slot icon.
+
 v0.5.0
 - New name: Suit Enhancement Suite, with a new mod id and config file (BepInEx/config/net.xceled.stationeers.suitenhancementsuite.cfg). Settings from the earlier config file are not read: set them again.
 - The uniform's storage slots moved behind its own slots (breaks old saves' uniforms): its own slots are back at 0 to 3, storage at 4 to 7. A uniform saved with the old layout loads with the two groups swapped; drag the items back. Suits and the Marine Vest are unchanged.

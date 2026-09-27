@@ -1,6 +1,6 @@
 {
-  "description": "Slot indices of garments before and after Suit Enhancement Suite 0.5.0. Saves store a worn item's position as ParentSlotId (the index in its parent's slot list); the game moves it there on load without checking the slot type. Only uniforms move; suits and body armor keep every index.",
-  "version": "0.5.0",
+  "description": "Slot indices of garments before and after Suit Enhancement Suite 0.5.0, and the 0.6.0 addition. Saves store a worn item's position as ParentSlotId (the index in its parent's slot list); the game moves it there on load without checking the slot type. Only uniforms moved (0.5.0); suits and body armor keep every index. 0.6.0 appends a Waste slot after Food on suits and body armor, so no existing index moves.",
+  "version": "0.6.0",
   "garments": [
     {
       "garment": "uniform",
@@ -36,13 +36,13 @@
       "garment": "suit",
       "match": "SuitBase (space suits, Hardsuit, Icarus, HARM suit, EVA suit) and other clothing whose prefab name contains Suit, Icarus or Armor, except uniforms and body armor",
       "oldToNew": "identity",
-      "layout": "vanilla 0..N-1, Water N, Food N+1 (Hardsuit: N = 8, Water 8, Food 9)"
+      "layout": "vanilla 0..N-1, Water N, Food N+1, Waste N+2 (Hardsuit: N = 8, Water 8, Food 9, Waste 10; Waste added in 0.6.0)"
     },
     {
       "garment": "bodyArmor",
       "match": "Thing whose C# type is BodyArmor (Marine Vest)",
       "oldToNew": "identity",
-      "layout": "vanilla 0..N-1, storage 1..8 at N..N+7, Water N+8, Food N+9"
+      "layout": "vanilla 0..N-1, storage 1..8 at N..N+7, Water N+8, Food N+9, Waste N+10 (Waste added in 0.6.0)"
     }
   ]
 }

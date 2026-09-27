@@ -12,7 +12,19 @@ internal abstract class Edible
     /// <summary>Eats one bite of <paramref name="thing"/>, which <see cref="Accepts"/> has accepted.</summary>
     public abstract bool TryEat(Thing thing, Human human, ConsumptionPolicy policy, out float amount);
 
+    /// <summary>How <paramref name="thing"/>, which <see cref="Accepts"/> has accepted, ranks as a Food slot refill.</summary>
+    public abstract FoodOffer Offer(Thing thing, Human human);
+
     protected static NeedLevel NutritionOf(Human human) => new(human.Nutrition, human.GetNutritionStorage());
+
+    protected static FoodGrade GradeOf(INutrition food) => food.GetFoodQuality() switch
+    {
+        FoodQuality.Raw => FoodGrade.Raw,
+        FoodQuality.Cooked => FoodGrade.Cooked,
+        FoodQuality.Canned => FoodGrade.Canned,
+        FoodQuality.Complex => FoodGrade.Complex,
+        _ => FoodGrade.None,
+    };
 }
 
 /// <summary>
@@ -34,6 +46,12 @@ internal sealed class PortionedFood : Edible
         human.OnFoodEaten(food);
         food.Quantity -= amount;
         return true;
+    }
+
+    public override FoodOffer Offer(Thing thing, Human human)
+    {
+        var food = (Food)thing;
+        return FoodOffer.Portioned(GradeOf(food), food.GetNutritionalValue());
     }
 }
 
@@ -62,5 +80,11 @@ internal sealed class WholeUnitFood : Edible
         human.OnFoodEaten(food);
         amount = unit;
         return true;
+    }
+
+    public override FoodOffer Offer(Thing thing, Human human)
+    {
+        var food = (INutrition)thing;
+        return FoodOffer.WholeUnit(GradeOf(food), food.Nutrition(food.EatAmount(human)));
     }
 }

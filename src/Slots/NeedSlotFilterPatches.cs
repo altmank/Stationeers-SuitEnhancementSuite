@@ -4,7 +4,7 @@ using GameStrings = Assets.Scripts.Localization2.GameStrings;
 
 namespace SuitEnhancementSuite;
 
-// The Water and Food slots are of class None, which vanilla lets anything enter. These three gates (the inventory UI
+// The Water, Food and Waste slots are of class None, which vanilla lets anything enter. These three gates (the inventory UI
 // checks IsAllowedType and AllowMove before CanEnter) admit exactly what NeedSlot.Accepts admits. Items already in a
 // slot are never evicted: a save restores them by index without these checks, and the player can take them out.
 

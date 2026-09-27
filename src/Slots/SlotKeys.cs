@@ -8,6 +8,7 @@ internal static class SlotKeys
 {
     public const string Water = "SuitEnhancementSuiteWater";
     public const string Food = "SuitEnhancementSuiteFood";
+    public const string Waste = "SuitEnhancementSuiteWaste";
     public const string FirstUniformStorage = "SuitEnhancementSuiteUniformStorage1";
     public const string FirstSharedPower = "SuitEnhancementSuiteSharedPower1";
     public const string SecondSharedPower = "SuitEnhancementSuiteSharedPower2";
