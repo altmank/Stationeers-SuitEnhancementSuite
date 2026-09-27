@@ -7,8 +7,14 @@ namespace SuitEnhancementSuite;
 // Every entry point that can build or show clothing slots adds the extra slots first. SuitSlotLayout.AddSlots is
 // idempotent, so the overlap is harmless.
 
-/// <summary>Adds the slots before the clothing initialises its inventory-window cache.</summary>
+/// <summary>
+/// Adds the slots before the clothing initialises its inventory-window cache. Runs after every other Awake prefix, so
+/// slots that other mods add to the same clothing there (StationeersLua's Suit Module slot on every suit) come first
+/// whatever the mod load order: a save names slots by index, so our indices must not depend on which mod loaded first.
+/// </summary>
 [HarmonyPatch(typeof(Thing), "Awake")]
+[HarmonyPriority(Priority.Last)]
+[HarmonyAfter("zedle.stationeers.lua")]
 internal static class ThingAwakeSlotsPatch
 {
     private static void Prefix(Thing __instance)
