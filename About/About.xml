@@ -3,7 +3,7 @@
   <Name>Suit Enhancement Suite</Name>
   <ModID>net.xceled.stationeers.suitenhancementsuite</ModID>
   <Author>XCeled</Author>
-  <Version>0.7.0</Version>
+  <Version>0.7.1</Version>
   <Description>[h1]More room and less busywork in your clothing[/h1]
 Suits get Water, Food and Waste slots that keep you fed, watered and relieved automatically, and refill themselves from your inventory. Advanced suits also get two Shared Power slots whose batteries keep your suit, tools and other batteries charged. The Marine Vest gets eight storage slots, and every uniform gets four storage slots.
 
@@ -92,6 +92,9 @@ Developed with the use of generative AI, and tokens aren't free. Buy me a coffee
 [url=https://ko-fi.com/xceled]ko-fi.com/xceled[/url]
   </Description>
   <ChangeLog>
+v0.7.1
+- The source code is now public on GitHub: github.com/altmank/Stationeers-SuitEnhancementSuite (linked on this page). No gameplay changes.
+
 v0.7.0
 - Shared Power moved to advanced suits (Hardsuit, HARM suit), after Waste (Hardsuit: 12, 13). Uniforms lose them: take batteries out of a uniform's slots 8 and 9 first. The Hardsuit's battery now counts as the suit battery.
 - Slot order no longer depends on mod load order: our slots always come after other mods' slots (e.g. StationeersLua's Suit Module).

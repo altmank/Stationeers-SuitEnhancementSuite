@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.1
+
+- **Source code on GitHub:** https://github.com/altmank/Stationeers-SuitEnhancementSuite, linked from the Workshop
+  page. No gameplay changes.
+
 ## 0.7.0
 
 - **Shared Power moved to advanced suits.** The two Shared Power slots now sit on the Hardsuit and the HARM suit, after

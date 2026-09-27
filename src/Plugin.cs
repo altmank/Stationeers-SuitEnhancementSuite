@@ -13,7 +13,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string PluginGuid = "net.xceled.stationeers.suitenhancementsuite";
     public const string PluginName = "Suit Enhancement Suite";
-    public const string PluginVersion = "0.7.0";
+    public const string PluginVersion = "0.7.1";
 
     internal static ManualLogSource Log;
 
