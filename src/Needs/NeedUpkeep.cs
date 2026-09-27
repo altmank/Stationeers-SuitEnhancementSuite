@@ -3,8 +3,9 @@ using Assets.Scripts.Objects.Entities;
 namespace SuitEnhancementSuite;
 
 /// <summary>
-/// Per-need state of the automatic pass: the use cooldown, the reusable replacement pick, and which players have been
-/// warned that the need is blocked for lack of inventory room (warned once until the need next succeeds).
+/// Per-need state of the automatic pass: the use cooldown, the wait for the game to apply the last use, the reusable
+/// replacement pick, and which players have been warned that the need is blocked for lack of inventory room (warned
+/// once until the need next succeeds).
 /// </summary>
 internal sealed class NeedUpkeep(NeedSlot need)
 {
@@ -13,6 +14,8 @@ internal sealed class NeedUpkeep(NeedSlot need)
     public NeedSlot Need => need;
 
     public NeedCooldown Cooldown { get; } = new();
+
+    public TickGate Settle { get; } = new();
 
     public ReplacementPick Pick { get; } = need.CreatePick();
 

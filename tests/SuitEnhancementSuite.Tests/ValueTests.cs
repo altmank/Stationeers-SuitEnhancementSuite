@@ -44,3 +44,49 @@ public class NeedCooldownTests
         Assert.False(cooldown.IsReady(2, 10f));
     }
 }
+
+public class TickGateTests
+{
+    [Fact]
+    public void A_player_is_open_until_served_then_after_two_completed_game_ticks()
+    {
+        var gate = new TickGate();
+        Assert.True(gate.IsOpen(7, 100));
+        gate.Close(7, 100);
+        Assert.False(gate.IsOpen(7, 100));
+        Assert.False(gate.IsOpen(7, 101));
+        Assert.True(gate.IsOpen(7, 102));
+        Assert.True(gate.IsOpen(8, 100));
+    }
+
+    [Fact]
+    public void A_paused_game_keeps_the_gate_closed_however_much_real_time_passes()
+    {
+        var gate = new TickGate();
+        gate.Close(7, 100);
+        for (var pass = 0; pass < 1000; pass++)
+            Assert.False(gate.IsOpen(7, 100));
+    }
+
+    [Fact]
+    public void A_restarted_or_wrapped_tick_counter_reads_as_settled()
+    {
+        var gate = new TickGate();
+        gate.Close(1, 5000);
+        Assert.True(gate.IsOpen(1, 3));
+        gate.Close(2, uint.MaxValue);
+        Assert.False(gate.IsOpen(2, 0));
+        Assert.True(gate.IsOpen(2, 1));
+    }
+
+    [Fact]
+    public void Prune_drops_only_settled_entries()
+    {
+        var gate = new TickGate();
+        gate.Close(1, 10);
+        gate.Close(2, 19);
+        gate.Prune(20);
+        Assert.Equal(1, gate.Count);
+        Assert.False(gate.IsOpen(2, 20));
+    }
+}

@@ -47,8 +47,12 @@ internal sealed class AutoConsumer(AutoConsumeSettings settings, AutoSwapSetting
                 }
             }
             if (++_passes % PrunePasses != 0) return;
+            var tick = GameManager.GameTickCount;
             foreach (var upkeep in _upkeeps)
+            {
                 upkeep.Cooldown.Prune(now);
+                upkeep.Settle.Prune(tick);
+            }
         }
         catch (Exception e)
         {
@@ -69,11 +73,18 @@ internal sealed class AutoConsumer(AutoConsumeSettings settings, AutoSwapSetting
         }
     }
 
+    /// <summary>
+    /// Uses the slot when the need is due, the cooldown has run out and the game has applied the last use. This pass
+    /// runs on real time and so also while the game is paused; without the tick gate a waste bag would be filled again
+    /// from a stomach the game has not drained yet, creating waste and using up every bag the player carries.
+    /// </summary>
     private StepResult Serve(NeedUpkeep upkeep, Slot slot, ConsumptionPolicy policy, float now, float cooldownSeconds)
     {
         var human = _player.Human;
         var need = upkeep.Need;
-        if (!upkeep.Cooldown.IsReady(human.ReferenceId, now)) return StepResult.Idle;
+        var tick = GameManager.GameTickCount;
+        if (!upkeep.Cooldown.IsReady(human.ReferenceId, now) || !upkeep.Settle.IsOpen(human.ReferenceId, tick))
+            return StepResult.Idle;
         var item = slot.Get();
         if (item == null || !need.Accepts(item)) return StepResult.Idle;
         var prefab = item.PrefabName;
@@ -81,6 +92,7 @@ internal sealed class AutoConsumer(AutoConsumeSettings settings, AutoSwapSetting
         var result = need.Serve(slot, _player, policy, out var amount);
         if (!result.IsDone) return result;
         upkeep.Cooldown.Start(human.ReferenceId, now, cooldownSeconds);
+        upkeep.Settle.Close(human.ReferenceId, tick);
         Plugin.Log.LogDebug(string.Format(CultureInfo.InvariantCulture,
             "Auto consume: {0} used {1:0.###} of {2}, {3} {4:0.##} -> {5:0.##}",
             human.DisplayName, amount, prefab, need.NeedName, before, need.Level(human)));
