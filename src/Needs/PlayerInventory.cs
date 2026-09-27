@@ -7,7 +7,8 @@ namespace SuitEnhancementSuite;
 /// <summary>
 /// What one player carries: hands, worn suit, uniform, backpack, toolbelt, helmet, glasses, and containers nested in
 /// them. Organ slots are never walked and entities (a carried player or animal) are never searched. The worn suit's
-/// need slots are neither sources nor free slots: each is only ever the target of its own need.
+/// need slots are neither sources nor free slots: each is only ever the target of its own need. Hands, and containers
+/// held in them, are never a source: what the player holds is in use.
 /// Bound to one player at a time and reused; allocation-free, slots are walked by index.
 /// </summary>
 internal sealed class PlayerInventory
@@ -16,6 +17,7 @@ internal sealed class PlayerInventory
     private const int MaxDepth = 4;
 
     // Storage before hands: a spent item is stowed in the first free storage slot, and hands are the last resort.
+    // Hands are only ever a place to stow, never a source.
     private readonly Slot[] _storage = new Slot[6];
     private readonly Slot[] _hands = new Slot[2];
 
@@ -41,12 +43,11 @@ internal sealed class PlayerInventory
 
     public bool TryFindNeedSlot(NeedSlot need, out Slot slot) => SuitSlotLayout.TryFindSlot(Worn.Slots, need.Key, out slot);
 
-    /// <summary>Lets <paramref name="pick"/> weigh every usable item for <paramref name="need"/>.</summary>
+    /// <summary>Lets <paramref name="pick"/> weigh every usable item for <paramref name="need"/> outside the hands.</summary>
     public void OfferReplacements(NeedSlot need, ReplacementPick pick)
     {
         pick.Clear();
         Offer(_storage, need, pick);
-        Offer(_hands, need, pick);
     }
 
     /// <summary>
