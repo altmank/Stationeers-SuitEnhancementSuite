@@ -1,0 +1,48 @@
+{
+  "description": "Slot indices of garments before and after Suit Enhancement Suite 0.5.0. Saves store a worn item's position as ParentSlotId (the index in its parent's slot list); the game moves it there on load without checking the slot type. Only uniforms move; suits and body armor keep every index.",
+  "version": "0.5.0",
+  "garments": [
+    {
+      "garment": "uniform",
+      "match": "Thing whose C# type is Assets.Scripts.Objects.Clothing.Uniform (UniformOrangeJumpSuit, UniformMarine, UniformCommander, ...)",
+      "vanillaSlotCount": 4,
+      "vanillaSlotCountEvidence": "LIVE save Vulcan2_4 (2026-09-27): UniformOrangeJumpSuit had its own slots at 4..7 under the old layout",
+      "oldLayout": [
+        { "index": 0, "slot": "storage 1" },
+        { "index": 1, "slot": "storage 2" },
+        { "index": 2, "slot": "storage 3" },
+        { "index": 3, "slot": "storage 4" },
+        { "index": 4, "slot": "vanilla 0" },
+        { "index": 5, "slot": "vanilla 1" },
+        { "index": 6, "slot": "vanilla 2" },
+        { "index": 7, "slot": "vanilla 3" }
+      ],
+      "newLayout": [
+        { "index": 0, "slot": "vanilla 0" },
+        { "index": 1, "slot": "vanilla 1" },
+        { "index": 2, "slot": "vanilla 2" },
+        { "index": 3, "slot": "vanilla 3" },
+        { "index": 4, "slot": "storage 1" },
+        { "index": 5, "slot": "storage 2" },
+        { "index": 6, "slot": "storage 3" },
+        { "index": 7, "slot": "storage 4" },
+        { "index": 8, "slot": "shared power 1", "type": "Battery" },
+        { "index": 9, "slot": "shared power 2", "type": "Battery" }
+      ],
+      "oldToNew": { "0": 4, "1": 5, "2": 6, "3": 7, "4": 0, "5": 1, "6": 2, "7": 3 },
+      "rule": "V = vanillaSlotCount. old i < 4 -> V + i; old i >= 4 -> i - 4. New slots V+4 and V+5 (shared power) have no old counterpart."
+    },
+    {
+      "garment": "suit",
+      "match": "SuitBase (space suits, Hardsuit, Icarus, HARM suit, EVA suit) and other clothing whose prefab name contains Suit, Icarus or Armor, except uniforms and body armor",
+      "oldToNew": "identity",
+      "layout": "vanilla 0..N-1, Water N, Food N+1 (Hardsuit: N = 8, Water 8, Food 9)"
+    },
+    {
+      "garment": "bodyArmor",
+      "match": "Thing whose C# type is BodyArmor (Marine Vest)",
+      "oldToNew": "identity",
+      "layout": "vanilla 0..N-1, storage 1..8 at N..N+7, Water N+8, Food N+9"
+    }
+  ]
+}

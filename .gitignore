@@ -1,0 +1,13 @@
+# build output
+/src/bin/
+/src/obj/
+/tests/*/bin/
+/tests/*/obj/
+/package/
+
+# editor / tooling
+.vs/
+*.user
+*.suo
+.idea/
+reference/
