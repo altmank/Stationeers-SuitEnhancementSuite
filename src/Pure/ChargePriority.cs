@@ -11,7 +11,7 @@ internal enum ChargePriority : byte
 /// <summary>Where a battery sits in a player's inventory, as far as sharing power is concerned.</summary>
 internal enum BatteryPlace : byte
 {
-    /// <summary>One of the uniform's Shared Power slots: a source, never charged.</summary>
+    /// <summary>One of the worn advanced suit's Shared Power slots: a source, never charged.</summary>
     SharedPower,
 
     /// <summary>The battery slot of the suit the player wears.</summary>

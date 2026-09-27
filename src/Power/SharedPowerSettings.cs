@@ -22,8 +22,9 @@ internal sealed class SharedPowerSettings
     public SharedPowerSettings(ConfigFile config)
     {
         _enabled = config.Bind(Section, "Enabled", true,
-            "On: batteries in the worn uniform's two Shared Power slots charge the other batteries you carry " +
-            "(host only). Off: the slots only hold batteries. The slots exist either way. Default: on.");
+            "On: batteries in the two Shared Power slots of the worn advanced suit (Hardsuit, HARM suit) charge the " +
+            "other batteries you carry (host only). Off: the slots only hold batteries. The slots exist either way. " +
+            "Default: on.");
         _rate = config.Bind(Section, "Transfer Rate", 500d, new ConfigDescription(
             $"W per battery ({Describe(RateRange)}): the most each battery receives per power tick (twice a " +
             "second), the unit the game uses for the Battery Cell Charger's 500 W. Default 500.", RateRange));

@@ -21,6 +21,16 @@ internal static class SlotIcons
 
     public static Sprite SharedPower { get; private set; }
 
+    /// <summary>The empty-slot icon of an added slot; storage slots have none.</summary>
+    public static Sprite For(AddedSlotKind kind) => kind switch
+    {
+        AddedSlotKind.Water => Water,
+        AddedSlotKind.Food => Food,
+        AddedSlotKind.Waste => Waste,
+        AddedSlotKind.SharedPower => SharedPower,
+        _ => null,
+    };
+
     public static void Load()
     {
         Water = LoadEmbedded("SuitEnhancementSuite.Assets.Water.png");

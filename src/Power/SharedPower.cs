@@ -9,7 +9,8 @@ using Assets.Scripts.Objects.Items;
 namespace SuitEnhancementSuite;
 
 /// <summary>
-/// Moves energy from the batteries in the worn uniform's Shared Power slots into the other batteries a player carries.
+/// Moves energy from the batteries in the worn advanced suit's Shared Power slots into the other batteries a player
+/// carries.
 /// Runs at the end of every power tick on the game's power thread, the thread that also drains those batteries, on the
 /// simulation authority only. It writes <see cref="BatteryCell.PowerStored"/>; the cell's next OnPowerTick recomputes
 /// the displayed percentage and sends it to clients, so there is no traffic of its own.
@@ -61,9 +62,9 @@ internal sealed class SharedPower(SharedPowerSettings settings)
         _plan.Clear();
         _sources.Clear();
         _targets.Clear();
-        if (human.UniformSlot?.Get() is not Uniform uniform || !CollectSources(uniform)) return;
-        var wornSuit = human.SuitSlot?.Get() as SuitBase;
-        CollectTargets(human, human, BatteryPlace.Elsewhere, wornSuit, chargeSuitBattery, depth: 0);
+        // Only an advanced suit has Shared Power slots (SlotPlan), so any other suit, or none, finds no source.
+        if (human.SuitSlot?.Get() is not { Slots: not null } worn || !CollectSources(worn)) return;
+        CollectTargets(human, human, BatteryPlace.Elsewhere, worn as ISuit, chargeSuitBattery, depth: 0);
         if (_plan.TargetCount == 0) return;
         _plan.Distribute(policy);
         if (_plan.TotalDrawn <= 0f) return;
@@ -80,9 +81,9 @@ internal sealed class SharedPower(SharedPowerSettings settings)
     }
 
     /// <returns>True when at least one Shared Power cell holds energy.</returns>
-    private bool CollectSources(Uniform uniform)
+    private bool CollectSources(DynamicThing suit)
     {
-        var slots = uniform.Slots;
+        var slots = suit.Slots;
         var anyCharge = false;
         for (var i = 0; i < slots.Count; i++)
         {
@@ -95,7 +96,7 @@ internal sealed class SharedPower(SharedPowerSettings settings)
         return anyCharge;
     }
 
-    private void CollectTargets(Thing parent, Human human, BatteryPlace branch, SuitBase wornSuit, bool chargeSuitBattery, int depth)
+    private void CollectTargets(Thing parent, Human human, BatteryPlace branch, ISuit wornSuit, bool chargeSuitBattery, int depth)
     {
         var slots = parent.Slots;
         if (slots == null) return;
@@ -112,10 +113,11 @@ internal sealed class SharedPower(SharedPowerSettings settings)
         }
     }
 
-    private static BatteryPlace PlaceOf(Slot slot, Thing parent, SuitBase wornSuit, BatteryPlace branch)
+    // ISuit covers both suit families: the Hardsuit is the older Suit class, whose battery slot SuitBase never sees.
+    private static BatteryPlace PlaceOf(Slot slot, Thing parent, ISuit wornSuit, BatteryPlace branch)
     {
         if (SlotKeys.IsSharedPower(slot.StringKey)) return BatteryPlace.SharedPower;
-        if (wornSuit is not null && ReferenceEquals(parent, wornSuit) && wornSuit.HasBatterySlot && wornSuit.BatterySlot == slot)
+        if (wornSuit is not null && ReferenceEquals(parent, wornSuit.AsThing) && ReferenceEquals(wornSuit.BatterySlot, slot))
             return BatteryPlace.SuitBattery;
         return branch;
     }

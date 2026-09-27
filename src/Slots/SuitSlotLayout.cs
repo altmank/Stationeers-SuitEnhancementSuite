@@ -2,27 +2,28 @@ using System;
 using System.Collections.Generic;
 using Assets.Scripts.Objects;
 using Assets.Scripts.Objects.Clothing;
+using Assets.Scripts.Objects.Clothing.Suits;
 using UnityEngine;
 
 namespace SuitEnhancementSuite;
 
 /// <summary>
-/// Adds the extra slots to clothing, always after the clothing's own slots, so the game's slot indices never move.
-/// Saves store each item by slot index, so this order is permanent (tools\slot_layout.json):
-/// suits get Water, Food and Waste; body armor gets eight storage slots, then Water, Food and Waste; a uniform gets four storage
-/// slots, then two Shared Power battery slots. Adding is idempotent.
+/// Adds the extra slots to clothing, always after the clothing's own slots and after the slots other mods add when it
+/// is created, so no existing slot index ever moves. Saves store each item by slot index, so the order of
+/// <see cref="SlotPlan"/> is permanent (tools\slot_layout.json). Adding is idempotent.
 /// </summary>
 internal static class SuitSlotLayout
 {
-    private const int ArmorStorageCount = 8;
-    private const int UniformStorageCount = 4;
-
     /// <summary>Adds the slots when <paramref name="clothing"/> is supported and does not have them yet.</summary>
     /// <returns>True when slots were added.</returns>
     public static bool AddSlots(DynamicThing clothing)
     {
-        if (clothing == null || !IsSupported(clothing) || clothing.Slots == null) return false;
-        return clothing is Uniform ? AddUniformSlots(clothing) : AddSuitSlots(clothing);
+        if (clothing?.Slots is not { } slots || !TryClassify(clothing, out var garment)) return false;
+        var plan = SlotPlan.For(garment);
+        if (TryFindSlot(slots, plan[0].Key, out _) || !TryGetTemplate(slots, out var template)) return false;
+        foreach (var added in plan)
+            slots.Add(NewSlot(clothing, template, added));
+        return true;
     }
 
     public static bool TryFindSlot(List<Slot> slots, string key, out Slot slot)
@@ -37,29 +38,34 @@ internal static class SuitSlotLayout
         return false;
     }
 
-    private static bool AddUniformSlots(DynamicThing uniform)
+    /// <summary>
+    /// The runtime type decides first: during save deserialization PrefabName is not populated yet. Advanced suits are
+    /// the Hardsuit (ItemHardSuit, the game's AdvancedSuit class), the HARM suit, and the spawn-only Hardsuit and
+    /// advanced AC suit of the newer suit family.
+    /// </summary>
+    private static bool TryClassify(DynamicThing thing, out Garment garment)
     {
-        var slots = uniform.Slots;
-        if (TryFindSlot(slots, SlotKeys.FirstUniformStorage, out _) || !TryGetTemplate(slots, out var template)) return false;
-        for (var number = 1; number <= UniformStorageCount; number++)
-            slots.Add(NewSlot(uniform, template, SlotKeys.UniformStorage(number), Slot.Class.None, icon: null));
-        slots.Add(NewSlot(uniform, template, SlotKeys.FirstSharedPower, Slot.Class.Battery, SlotIcons.SharedPower));
-        slots.Add(NewSlot(uniform, template, SlotKeys.SecondSharedPower, Slot.Class.Battery, SlotIcons.SharedPower));
-        return true;
+        switch (thing)
+        {
+            case Uniform:
+                garment = Garment.Uniform;
+                return true;
+            case BodyArmor:
+                garment = Garment.BodyArmor;
+                return true;
+            case AdvancedSuit or HardSuit or HARMSuit or AdvancedACSuit:
+                garment = Garment.AdvancedSuit;
+                return true;
+            default:
+                garment = Garment.Suit;
+                return thing is Suit or SuitBase || HasSuitName(thing.PrefabName ?? string.Empty);
+        }
     }
 
-    private static bool AddSuitSlots(DynamicThing suit)
-    {
-        var slots = suit.Slots;
-        if (TryFindSlot(slots, SlotKeys.Water, out _) || !TryGetTemplate(slots, out var template)) return false;
-        if (suit is BodyArmor)
-            for (var number = 1; number <= ArmorStorageCount; number++)
-                slots.Add(NewSlot(suit, template, SlotKeys.ArmorStorage(number), Slot.Class.None, icon: null));
-        slots.Add(NewSlot(suit, template, SlotKeys.Water, Slot.Class.None, SlotIcons.Water));
-        slots.Add(NewSlot(suit, template, SlotKeys.Food, Slot.Class.None, SlotIcons.Food));
-        slots.Add(NewSlot(suit, template, SlotKeys.Waste, Slot.Class.None, SlotIcons.Waste));
-        return true;
-    }
+    private static bool HasSuitName(string name) =>
+        name.IndexOf("Suit", StringComparison.OrdinalIgnoreCase) >= 0 ||
+        name.IndexOf("Icarus", StringComparison.OrdinalIgnoreCase) >= 0 ||
+        name.IndexOf("Armor", StringComparison.OrdinalIgnoreCase) >= 0;
 
     private static bool TryGetTemplate(List<Slot> slots, out Slot template)
     {
@@ -67,28 +73,17 @@ internal static class SuitSlotLayout
         return template != null;
     }
 
-    private static Slot NewSlot(DynamicThing parent, Slot template, string key, Slot.Class type, Sprite icon) => new()
+    private static Slot NewSlot(DynamicThing parent, Slot template, AddedSlot added) => new()
     {
         IsInteractable = true,
         IsSwappable = template.IsSwappable,
         HidesOccupant = template.HidesOccupant,
         IsHiddenInSeat = template.IsHiddenInSeat,
         OccupantCastsShadows = template.OccupantCastsShadows,
-        StringKey = key,
+        StringKey = added.Key,
         Parent = parent,
-        Type = type,
-        StringHash = Animator.StringToHash(key),
-        SlotTypeIcon = icon,
+        Type = added.Kind == AddedSlotKind.SharedPower ? Slot.Class.Battery : Slot.Class.None,
+        StringHash = Animator.StringToHash(added.Key),
+        SlotTypeIcon = SlotIcons.For(added.Kind),
     };
-
-    private static bool IsSupported(DynamicThing thing)
-    {
-        // During save deserialization PrefabName is not populated yet, so the runtime type decides first.
-        if (thing is Uniform || thing is SuitBase || thing is BodyArmor) return true;
-        var name = thing.PrefabName ?? string.Empty;
-        return name.IndexOf("Suit", StringComparison.OrdinalIgnoreCase) >= 0 ||
-               name.IndexOf("Icarus", StringComparison.OrdinalIgnoreCase) >= 0 ||
-               name.IndexOf("Armor", StringComparison.OrdinalIgnoreCase) >= 0 ||
-               name == "ItemEvaSuit";
-    }
 }

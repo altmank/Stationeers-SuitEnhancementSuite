@@ -1,7 +1,8 @@
 """Move a Stationeers save from the old uniform slot layout to Suit Enhancement Suite's layout.
 
 Uniforms: the old layout put 4 extra slots first (0-3) and the uniform's own 4 slots after (4-7).
-The new layout puts the uniform's own slots first (0-3), extra storage at 4-7, shared power at 8-9.
+The new layout puts the uniform's own slots first (0-3) and extra storage at 4-7 (0.5.0-0.6.0 also had
+shared power at 8-9; 0.7.0 moved it to advanced suits).
 Items in the old extra slots move to free slots of a locker; the uniform's own items move 4-7 -> 0-3.
 Suits and other garments are unchanged.
 
@@ -70,7 +71,7 @@ def validate(xml, n_before, locker):
     if len(things) != n_before: raise SystemExit(f"thing count {len(things)} != {n_before}")
     for (par, slot), rid in slots.items():
         pf = re.search(r"<ReferenceId>%s</ReferenceId>\s*<PrefabName>([^<]*)<" % par, xml)
-        if pf and pf.group(1).startswith("Uniform") and int(slot) > 9: raise SystemExit(f"uniform slot {slot} out of range")
+        if pf and pf.group(1).startswith("Uniform") and int(slot) > 7: raise SystemExit(f"uniform slot {slot} out of range")
         if par == locker and int(slot) > 29: raise SystemExit("locker slot out of range")
 
 def main():

@@ -1,6 +1,6 @@
 {
-  "description": "Slot indices of garments before and after Suit Enhancement Suite 0.5.0, and the 0.6.0 addition. Saves store a worn item's position as ParentSlotId (the index in its parent's slot list); the game moves it there on load without checking the slot type. Only uniforms moved (0.5.0); suits and body armor keep every index. 0.6.0 appends a Waste slot after Food on suits and body armor, so no existing index moves.",
-  "version": "0.6.0",
+  "description": "Slot indices of garments before and after Suit Enhancement Suite 0.5.0, and later additions. Saves store a worn item's position as ParentSlotId (the index in its parent's slot list); on load the game moves it there with DynamicThing.MoveToSlot, which refuses an item the slot does not admit and leaves it in the world. This mod's slots come after the garment's own slots AND after slots other mods add when the garment is created (StationeersLua adds a 'Suit Module' slot to every suit; since 0.7.0 our Awake prefix runs last, so the order no longer depends on mod load order). Only uniforms moved (0.5.0); 0.6.0 appended Waste after Food on suits and body armor; 0.7.0 removed the uniform's Shared Power slots 8-9 and appended them after Waste on advanced suits.",
+  "version": "0.7.0",
   "garments": [
     {
       "garment": "uniform",
@@ -8,41 +8,113 @@
       "vanillaSlotCount": 4,
       "vanillaSlotCountEvidence": "LIVE save Vulcan2_4 (2026-09-27): UniformOrangeJumpSuit had its own slots at 4..7 under the old layout",
       "oldLayout": [
-        { "index": 0, "slot": "storage 1" },
-        { "index": 1, "slot": "storage 2" },
-        { "index": 2, "slot": "storage 3" },
-        { "index": 3, "slot": "storage 4" },
-        { "index": 4, "slot": "vanilla 0" },
-        { "index": 5, "slot": "vanilla 1" },
-        { "index": 6, "slot": "vanilla 2" },
-        { "index": 7, "slot": "vanilla 3" }
+        {
+          "index": 0,
+          "slot": "storage 1"
+        },
+        {
+          "index": 1,
+          "slot": "storage 2"
+        },
+        {
+          "index": 2,
+          "slot": "storage 3"
+        },
+        {
+          "index": 3,
+          "slot": "storage 4"
+        },
+        {
+          "index": 4,
+          "slot": "vanilla 0"
+        },
+        {
+          "index": 5,
+          "slot": "vanilla 1"
+        },
+        {
+          "index": 6,
+          "slot": "vanilla 2"
+        },
+        {
+          "index": 7,
+          "slot": "vanilla 3"
+        }
       ],
       "newLayout": [
-        { "index": 0, "slot": "vanilla 0" },
-        { "index": 1, "slot": "vanilla 1" },
-        { "index": 2, "slot": "vanilla 2" },
-        { "index": 3, "slot": "vanilla 3" },
-        { "index": 4, "slot": "storage 1" },
-        { "index": 5, "slot": "storage 2" },
-        { "index": 6, "slot": "storage 3" },
-        { "index": 7, "slot": "storage 4" },
-        { "index": 8, "slot": "shared power 1", "type": "Battery" },
-        { "index": 9, "slot": "shared power 2", "type": "Battery" }
+        {
+          "index": 0,
+          "slot": "vanilla 0"
+        },
+        {
+          "index": 1,
+          "slot": "vanilla 1"
+        },
+        {
+          "index": 2,
+          "slot": "vanilla 2"
+        },
+        {
+          "index": 3,
+          "slot": "vanilla 3"
+        },
+        {
+          "index": 4,
+          "slot": "storage 1"
+        },
+        {
+          "index": 5,
+          "slot": "storage 2"
+        },
+        {
+          "index": 6,
+          "slot": "storage 3"
+        },
+        {
+          "index": 7,
+          "slot": "storage 4"
+        }
       ],
-      "oldToNew": { "0": 4, "1": 5, "2": 6, "3": 7, "4": 0, "5": 1, "6": 2, "7": 3 },
-      "rule": "V = vanillaSlotCount. old i < 4 -> V + i; old i >= 4 -> i - 4. New slots V+4 and V+5 (shared power) have no old counterpart."
+      "oldToNew": {
+        "0": 4,
+        "1": 5,
+        "2": 6,
+        "3": 7,
+        "4": 0,
+        "5": 1,
+        "6": 2,
+        "7": 3
+      },
+      "rule": "V = vanillaSlotCount. old i < 4 -> V + i; old i >= 4 -> i - 4.",
+      "removed": {
+        "version": "0.7.0",
+        "slots": [
+          {
+            "index": 8,
+            "slot": "shared power 1",
+            "type": "Battery"
+          },
+          {
+            "index": 9,
+            "slot": "shared power 2",
+            "type": "Battery"
+          }
+        ],
+        "note": "An item saved there (0.5.0-0.6.0) finds no slot on load and is left in the world at the uniform's position."
+      }
     },
     {
       "garment": "suit",
       "match": "SuitBase (space suits, Hardsuit, Icarus, HARM suit, EVA suit) and other clothing whose prefab name contains Suit, Icarus or Armor, except uniforms and body armor",
       "oldToNew": "identity",
-      "layout": "vanilla 0..N-1, Water N, Food N+1, Waste N+2 (Hardsuit: N = 8, Water 8, Food 9, Waste 10; Waste added in 0.6.0)"
+      "layout": "vanilla 0..N-1, other mods' slots M (StationeersLua Suit Module: 1 on every suit), then Water N+M, Food N+M+1, Waste N+M+2; advanced suits then Shared Power N+M+3 and N+M+4 (Battery). Hardsuit with StationeersLua: vanilla 0-7, Suit Module 8, Water 9, Food 10, Waste 11, Shared Power 12, 13 (LIVE order Vulcan2_4, 2026-09-27). Waste added in 0.6.0, Shared Power on advanced suits in 0.7.0.",
+      "advancedSuits": "runtime class AdvancedSuit (ItemHardSuit), HARMSuit (ItemSuitHARM), HardSuit (ItemSuitHard), AdvancedACSuit (ItemSuitAdvancedAC)"
     },
     {
       "garment": "bodyArmor",
       "match": "Thing whose C# type is BodyArmor (Marine Vest)",
       "oldToNew": "identity",
-      "layout": "vanilla 0..N-1, storage 1..8 at N..N+7, Water N+8, Food N+9, Waste N+10 (Waste added in 0.6.0)"
+      "layout": "vanilla 0..N-1, other mods' slots M, storage 1..8 at N+M..N+M+7, Water N+M+8, Food N+M+9, Waste N+M+10 (Waste added in 0.6.0)"
     }
   ]
 }
