@@ -1,5 +1,7 @@
 # Suit Enhancement Suite
 
+Steam Workshop: https://steamcommunity.com/sharedfiles/filedetails/?id=3809431633
+
 More room and less busywork in your clothing. Suits get Water, Food and Waste slots that keep you fed, watered and
 relieved automatically and refill themselves from your inventory, advanced suits also get two Shared Power slots whose
 batteries keep your suit, tools and other batteries charged, the Marine Vest gets eight storage slots, and every
