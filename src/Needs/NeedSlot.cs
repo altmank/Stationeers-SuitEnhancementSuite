@@ -34,7 +34,15 @@ internal abstract class NeedSlot
         return slot != null;
     }
 
+    /// <summary>What may be put into the slot: exactly what it can serve from. The inventory filter.</summary>
     public abstract bool Accepts(Thing thing);
+
+    /// <summary>
+    /// What may stay in the slot, used up or not: what <see cref="Accepts"/> admits and what it no longer admits
+    /// once used up (a full waste bag). A save restores an item through a move that checks this, and a refused
+    /// move of a spent item must be able to return it.
+    /// </summary>
+    public virtual bool Holds(Thing thing) => Accepts(thing);
 
     /// <summary>Accepted and not used up: something the slot can still serve from.</summary>
     public bool IsUsable(DynamicThing thing) => Accepts(thing) && HasContent(thing);
@@ -143,6 +151,8 @@ internal abstract class NeedSlot
         public override string NeedName => "waste";
 
         public override bool Accepts(Thing thing) => thing is SanitationStack or SanitationPacket { IsStackFull: false };
+
+        public override bool Holds(Thing thing) => thing is SanitationStack or SanitationPacket;
 
         public override ReplacementShape ShapeOf(DynamicThing replacement) =>
             replacement is SanitationStack { Quantity: > 1 } ? ReplacementShape.OneOfStack : ReplacementShape.Whole;
