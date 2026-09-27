@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.7.0
+
+- **Shared Power moved to advanced suits.** The two Shared Power slots now sit on the Hardsuit and the HARM suit, after
+  Waste (Hardsuit: 12 and 13), and charge while you wear the suit. Uniforms lose their Shared Power slots: take the
+  batteries out of a uniform's slots 8 and 9 before updating, or they drop at your feet on load. The Hardsuit's own
+  battery now counts as the suit battery (charged first; `Charge Suit Battery` off skips it).
+- **Slot order no longer depends on mod load order.** The mod's slots are always added after every other mod's (for
+  example StationeersLua's Suit Module). Before, items could fall out of their slots at load when another mod's slot
+  took the index first.
+- **No waste from nothing while paused.** A waste bag, water or food use now waits until the game has ticked and
+  applied the last one, so the pause menu no longer refills and burns through your bags.
+- **A full waste bag stays in the Waste slot** across a reload instead of dropping at your feet.
+- **Auto-swap never takes items from your hands.**
+
 ## 0.6.0
 
 - **Waste slot.** Suits and the Marine Vest get a Waste slot after the Food slot (Hardsuit: slot 10); no existing slot

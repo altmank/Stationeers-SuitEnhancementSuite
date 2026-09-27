@@ -1,20 +1,22 @@
 # Suit Enhancement Suite
 
 More room and less busywork in your clothing. Suits get Water, Food and Waste slots that keep you fed, watered and
-relieved automatically and refill themselves from your inventory, the Marine Vest gets eight storage slots, and every
-uniform gets four storage slots plus two Shared Power slots whose batteries keep your suit, tools and other batteries
-charged.
+relieved automatically and refill themselves from your inventory, advanced suits also get two Shared Power slots whose
+batteries keep your suit, tools and other batteries charged, the Marine Vest gets eight storage slots, and every
+uniform gets four storage slots.
 
 ## Slots
 
 | Clothing | Added slots | Where |
 | --- | --- | --- |
-| Suits, spacesuits, Hardsuit, Icarus, HARM suit, other armour | Water, Food, Waste | after the suit's own slots (Hardsuit: 8 Water, 9 Food, 10 Waste) |
+| Suits, spacesuits, Hardsuit, Icarus, HARM suit, other armour | Water, Food, Waste | after the suit's own slots and other mods' slots (Hardsuit with StationeersLua's Suit Module at 8: 9 Water, 10 Food, 11 Waste) |
+| Advanced suits (Hardsuit, HARM suit) | also 2 Shared Power | after Waste (Hardsuit: 12, 13) |
 | Marine Vest (body armour) | 8 storage, Water, Food, Waste | after its own slots; Water, Food and Waste are the last three |
-| Uniforms (jumpsuits) | 4 storage, 2 Shared Power | after the uniform's own slots: storage 4 to 7, Shared Power 8 and 9 |
+| Uniforms (jumpsuits) | 4 storage | after the uniform's own slots: storage 4 to 7 |
 
 The added slots always come after the clothing's own slots, so the game's slots keep their usual places. New slots
-are only ever added at the end (0.6.0 added Waste behind Food), so saves from earlier versions load unchanged.
+are only ever added at the end (0.6.0 added Waste behind Food), and always after any slots other mods add (for example
+StationeersLua's Suit Module), whatever order the mods load in.
 
 - **Storage** slots take anything.
 - **Water** takes water bottles and anything else drunk like one.
@@ -24,7 +26,7 @@ are only ever added at the end (0.6.0 added Waste behind Food), so saves from ea
   refused.
 - **Shared Power** takes any battery cell.
 
-Only the suit you wear is eaten, drunk and relieved from, and only the uniform you wear shares power.
+Only the suit you wear is eaten, drunk and relieved from, and only the advanced suit you wear shares power.
 
 ## Eating and drinking
 
@@ -61,8 +63,8 @@ The Waste slot does it for you, through the suit:
 ## Auto-swap from your inventory
 
 When the Water, Food or Waste slot is empty, or its item is spent, the mod moves a fresh one in from your
-inventory: hands, the worn suit's and uniform's storage slots, backpack, tool belt, helmet, glasses, and containers
-inside them.
+inventory: the worn suit's and uniform's storage slots, backpack, tool belt, helmet, glasses, and containers inside
+them. Items in your hands are never taken.
 
 | Slot | Spent means | Fresh one chosen |
 | --- | --- | --- |
@@ -79,7 +81,7 @@ inside them.
 
 ## Shared Power
 
-While you wear the uniform, the batteries in its two Shared Power slots charge the other batteries you carry. On
+While you wear an advanced suit (Hardsuit, HARM suit), the batteries in its two Shared Power slots charge the other batteries you carry. On
 every power tick (twice a second) each battery receives up to `Transfer Rate` W, the same rate as the game's
 Battery Cell Charger:
 
@@ -96,7 +98,8 @@ one holding less energy is used first, so it runs flat and can be swapped while 
 - The Shared Power batteries never charge each other.
 - Nothing is created: each battery receives what the Shared Power batteries lose, less the `Loss` setting (0 % by
   default).
-- A uniform that is not worn (in a locker or a backpack) shares nothing.
+- A suit that is not worn (in a locker or a backpack) shares nothing. Basic, emergency and Icarus suits, spacesuits
+  and the Marine Vest have no Shared Power slots.
 
 ## Settings
 
@@ -137,7 +140,7 @@ saved with the old layout loads with its contents swapped:
 | --- | --- | --- |
 | 0 to 3 | storage 1 to 4 | the uniform's own slots |
 | 4 to 7 | the uniform's own slots | storage 1 to 4 |
-| 8, 9 | not present | Shared Power 1, 2 |
+| 8, 9 | not present | not present (0.5.0 and 0.6.0 had Shared Power here; 0.7.0 moved it to advanced suits) |
 
 An item stored at old position `n` belongs at new position `n + 4` (storage), and an item in the uniform's own slot
 at old position `n` belongs at `n - 4`. Suits and the Marine Vest did not change. The same mapping, as data for save
