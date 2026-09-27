@@ -94,22 +94,6 @@ Developed with the use of generative AI, and tokens aren't free. Buy me a coffee
   <ChangeLog>
 v0.7.1
 - The source code is now public on GitHub: github.com/altmank/Stationeers-SuitEnhancementSuite (linked on this page). No gameplay changes.
-
-v0.7.0
-- Shared Power moved to advanced suits (Hardsuit, HARM suit), after Waste (Hardsuit: 12, 13). Uniforms lose them: take batteries out of a uniform's slots 8 and 9 first. The Hardsuit's battery now counts as the suit battery.
-- Slot order no longer depends on mod load order: our slots always come after other mods' slots (e.g. StationeersLua's Suit Module).
-- No waste from nothing while paused; a full waste bag stays in its slot across a reload; auto-swap never takes from your hands.
-
-v0.6.0
-- Waste slot on suits and the Marine Vest, after Food (Hardsuit: slot 10); no existing slot moves. Takes folded and part-filled Waste Bags and uses them for you, through the suit, once your waste passes 25 %. New setting Waste Threshold.
-- Auto-swap: an empty Water, Food or Waste slot, an empty bottle, rotten food or a full bag is replaced from your inventory (the fullest water, the best food, a part-filled bag before a folded one). The spent item goes back where the fresh one came from or to a free slot. New Auto Swap section: Water, Food, Waste, all on.
-- New Waste slot icon.
-
-v0.5.0
-- New name: Suit Enhancement Suite, with a new mod id and config file (BepInEx/config/net.xceled.stationeers.suitenhancementsuite.cfg). Settings from the earlier config file are not read: set them again.
-- The uniform's storage slots moved behind its own slots (breaks old saves' uniforms): its own slots are back at 0 to 3, storage at 4 to 7. A uniform saved with the old layout loads with the two groups swapped; drag the items back. Suits and the Marine Vest are unchanged.
-- Shared Power slots: two battery slots on every uniform charge your suit battery, then what you hold, then every other battery you carry, up to 500 W per battery per power tick. The emptier one is used first. New settings: Enabled, Transfer Rate, Loss, Charge Suit Battery.
-- New slot icons for Water, Food and Shared Power.
 </ChangeLog>
   <WorkshopHandle>3809431633</WorkshopHandle>
   <Tags />
