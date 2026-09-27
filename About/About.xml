@@ -106,6 +106,6 @@ v0.5.0
 - Shared Power slots: two battery slots on every uniform charge your suit battery, then what you hold, then every other battery you carry, up to 500 W per battery per power tick. The emptier one is used first. New settings: Enabled, Transfer Rate, Loss, Charge Suit Battery.
 - New slot icons for Water, Food and Shared Power.
 </ChangeLog>
-  <WorkshopHandle>0</WorkshopHandle>
+  <WorkshopHandle>3809431633</WorkshopHandle>
   <Tags />
 </ModMetadata>
