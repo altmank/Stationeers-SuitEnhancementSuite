@@ -28,7 +28,7 @@ StationeersLua's Suit Module), whatever order the mods load in.
   refused.
 - **Shared Power** takes any battery cell.
 
-**Compatibility:** suits from the Aegis mod are left alone: SES adds no slots to them. Without Aegis nothing changes.
+**Compatibility:** suits and helmets from the Aegis mod are left alone: SES adds no slots to them. Without Aegis nothing changes.
 
 Only the suit you wear is eaten, drunk and relieved from, and only the advanced suit you wear shares power.
 
