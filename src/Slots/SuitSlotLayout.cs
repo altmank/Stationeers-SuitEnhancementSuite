@@ -18,12 +18,35 @@ internal static class SuitSlotLayout
     /// <returns>True when slots were added.</returns>
     public static bool AddSlots(DynamicThing clothing)
     {
-        if (clothing?.Slots is not { } slots || !TryClassify(clothing, out var garment)) return false;
+        if (clothing?.Slots is not { } slots || IsExcluded(clothing) || !TryClassify(clothing, out var garment)) return false;
         var plan = SlotPlan.For(garment);
         if (TryFindSlot(slots, plan[0].Key, out _) || !TryGetTemplate(slots, out var template)) return false;
         foreach (var added in plan)
             slots.Add(NewSlot(clothing, template, added));
         return true;
+    }
+
+    // Main thread only (every caller is a game patch or tick), so the cache needs no lock.
+    private static readonly Dictionary<Type, bool> ExcludedTypes = new();
+
+    /// <summary>
+    /// True for another mod's suit that SES leaves alone (Aegis). The type chain decides because PrefabName is not
+    /// populated during save deserialization; the prefab name is checked too and is never cached. Walks BaseType only,
+    /// so nothing throws when Aegis is not installed.
+    /// </summary>
+    internal static bool IsExcluded(Thing thing)
+    {
+        if (thing == null) return false;
+        var type = thing.GetType();
+        if (!ExcludedTypes.TryGetValue(type, out var byType))
+        {
+            var names = new List<string>();
+            for (var t = type; t != null; t = t.BaseType)
+                names.Add(t.FullName);
+            byType = SuitExclusion.IsExcluded(names, null);
+            ExcludedTypes[type] = byType;
+        }
+        return byType || SuitExclusion.IsExcluded(null, thing.PrefabName);
     }
 
     public static bool TryFindSlot(List<Slot> slots, string key, out Slot slot)
