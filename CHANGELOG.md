@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.2
+
+- **Aegis suits are left alone.** Suits from the Aegis mod get no slots from SES. Without Aegis nothing changes.
+
 ## 0.7.1
 
 - **Source code on GitHub:** https://github.com/altmank/Stationeers-SuitEnhancementSuite, linked from the Workshop
