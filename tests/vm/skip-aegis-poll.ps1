@@ -17,7 +17,8 @@ $sp = $r.Info.sp
 $spSteps = @('wait', 'selfcheck', 'control', 'equip', 'needs', 'capture', 'verdict', 'idle')
 if ((Get-Date) -lt [datetime]$sp.until) { return }
 
-$spLog = if ($bepLog) { $bepLog } else { 'C:\StationeersRigs\Client\BepInEx\LogOutput.log' }
+if (-not $bepLog) { Stop-Rig infra 'skip-aegis: the run gave no BepInEx log path' }
+$spLog = $bepLog
 $spFail = { param($why) Stop-Rig fail "skip-aegis ($spMode): $why" }
 $spWait = { param($s) $sp.until = (Get-Date).AddSeconds($s).ToString('o') }
 $spSave = { param($name, $obj) try { $obj.raw | Set-Content -Encoding utf8 (Join-Path $r.Res "sp-$name.json") } catch {} }
@@ -210,6 +211,7 @@ switch ($spStep) {
     'idle' { $spNext = $false }
 }
 if ($spNext) { $sp.i++ }
+
 
 
 

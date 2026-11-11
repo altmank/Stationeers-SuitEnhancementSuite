@@ -16,7 +16,7 @@
 #
 # Build first: pwsh -File build.ps1 (stamps +sha; the package must be what this commit ships). Aegis comes from its main checkout's built
 # package (its package.stamp head must match HEAD on the shipping paths, as Aegis's own proofs check).
-# Results: G:\StationeersRigs\VM\runs\ses-skip-aegis-<a|b>\<stamp>-<rig>\ (LogOutput.log, sp-*.json, skip-facts.json, run.txt).
+# Results: <run root>\ses-skip-aegis-<a|b>\<stamp>-<rig>\ (LogOutput.log, sp-*.json, skip-facts.json, run.txt).
 #Requires -Version 7.5
 param(
     [Parameter(Mandatory)] [ValidateSet('a', 'b')] [string] $Run,
@@ -24,17 +24,21 @@ param(
     [string] $Owner = 'ses-vm-proof',
     [string] $Item = 'item:SuitEnhancementSuite/skip-aegis-vm-proof',
     [int] $ExpectedMinutes = 0,
-    [string] $AegisCheckout = 'G:\Programming\Git\StationeersMods\Aegis',
+    [string] $AegisCheckout = '',
     # The Aegis commit to test, when main has moved past the built package: it must be the package.stamp head (the package is what is staged).
     [string] $AegisCommit = '',
-    [string] $RigVMRepo = 'G:\Programming\Git\StationeersMods\RigVM',
-    [string] $StationGod = 'G:\Programming\Git\StationeersMods\StationGodMCP\package',
-    [string] $World = 'G:\StationeersRigs\worlds\two-docks',
+    [string] $RigVMRepo = '',
+    [string] $StationGod = '',
+    [string] $World = '',
     [int] $TimeoutSeconds = 1200
 )
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot\rigvm-host.ps1"
 $repo = (Resolve-Path "$PSScriptRoot\..\..").Path
+if (-not $AegisCheckout) { $AegisCheckout = Get-SiblingRepo 'Aegis' }
+if (-not $RigVMRepo) { $RigVMRepo = Get-SiblingRepo 'RigVM' }
+if (-not $StationGod) { $StationGod = Join-Path (Get-SiblingRepo 'StationGodMCP') 'package' }
+if (-not $World) { $World = Join-Path (Get-EnvRoot 'STATIONEERS_WORLDS' 'the shared test-worlds folder') 'two-docks' }
 $shipping = '^(src/|About/|Assets/|Directory\.Build\.|[^/]*\.csproj$|[^/]*\.sln$|build\.ps1$)'
 if (-not (Test-Path "$World\$(Split-Path $World -Leaf).save")) { Write-Host "refused: no save in $World"; exit 3 }
 if (-not (Test-Path "$StationGod\About\About.xml")) { Write-Host "refused: no StationGodMCP at $StationGod"; exit 3 }
@@ -108,4 +112,5 @@ try { $code = Invoke-RigEntry -Entry "$rig\host\vm-client-run.ps1" -Params $p -W
 finally { Remove-Item -Recurse -Force $stage -ErrorAction SilentlyContinue }
 Write-Host "skip-aegis-proof: run $Run vm-client-run exit $code (SES $sesVersion $sesSha$(if ($aegisHead) { ", Aegis $aegisHead" }))"
 exit $code
+
 

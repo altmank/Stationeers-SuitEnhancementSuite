@@ -78,7 +78,8 @@ $v = Judge 'b' (Facts $null $vanK) ($goodB + "`n[Error  :Suit Enhancement Suite]
 $v = Judge 'c' (Facts $null $vanK) $goodB; Check ((Mentions $v 'unknown mode')) 'an unknown mode FAILS'
 
 # A recorded reply from a real run (an Aegis suit's inspect contents): read, no SES labels, so it is a clean Aegis capture.
-if (-not $RecordedReply) { $RecordedReply = 'G:\StationeersRigs\VM\runs\aegis-dock-aegis\20261111-103302-pool8d22\dq-suit-contents.json' }
+if (-not $RecordedReply -and $env:STATIONEERS_RIG_RUNS) { $RecordedReply = Join-Path $env:STATIONEERS_RIG_RUNS 'aegis-dock-aegis\20261111-103302-pool8d22\dq-suit-contents.json' }
+if (-not $RecordedReply) { $RecordedReply = '(set STATIONEERS_RIG_RUNS or pass -RecordedReply)' }
 if (Test-Path $RecordedReply) {
     $raw = Get-Content -Raw $RecordedReply
     if ($raw.Trim()) {
@@ -94,6 +95,7 @@ else { Write-Host "info: no recorded reply at $RecordedReply; the recorded-reply
 
 if ($script:fails) { Write-Host "$script:fails check(s) FAILED"; exit 1 }
 Write-Host 'all checks passed'
+
 
 
 

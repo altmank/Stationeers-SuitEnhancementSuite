@@ -10,12 +10,15 @@ param(
     [Parameter(Mandatory)] [string] $RunCopy,
     [Parameter(Mandatory)] [ValidateSet('a', 'b')] [string] $Mode,
     [ValidateSet('ok', 'inject', 'withhold')] [string] $Scenario = 'ok',
-    [string] $RigVM = 'G:\Programming\Git\StationeersMods\RigVM',
-    [string] $World = 'G:\StationeersRigs\worlds\two-docks',
+    [string] $RigVM = '',
+    [string] $World = '',
     # >0: a whole-suit inspect slots answers only this many rows, as the game's reply budget did for the 21-slot Aegis suit (runs the per-slot read)
     [int] $CutFull = 0
 )
 $ErrorActionPreference = 'Stop'
+. "$PSScriptRoot\rigvm-host.ps1"
+if (-not $RigVM) { $RigVM = Get-SiblingRepo 'RigVM' }
+if (-not $World) { $World = Join-Path (Get-EnvRoot 'STATIONEERS_WORLDS' 'the shared test-worlds folder') 'two-docks' }
 $work = Join-Path ([IO.Path]::GetTempPath()) "skipdry-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
 New-Item -ItemType Directory -Force "$work\host\aegis", "$work\res" | Out-Null
 $log = Join-Path $work 'LogOutput.log'
@@ -121,6 +124,7 @@ $ok = switch ($Scenario) {
 Remove-Item -Recurse -Force $work -ErrorAction SilentlyContinue
 if ($ok) { Write-Host 'dry: AS EXPECTED'; exit 0 }
 Write-Host 'dry: NOT AS EXPECTED'; exit 1
+
 
 
 
