@@ -25,6 +25,8 @@ param(
     [string] $Item = 'item:SuitEnhancementSuite/skip-aegis-vm-proof',
     [int] $ExpectedMinutes = 0,
     [string] $AegisCheckout = 'G:\Programming\Git\StationeersMods\Aegis',
+    # The Aegis commit to test, when main has moved past the built package: it must be the package.stamp head (the package is what is staged).
+    [string] $AegisCommit = '',
     [string] $RigVMRepo = 'G:\Programming\Git\StationeersMods\RigVM',
     [string] $StationGod = 'G:\Programming\Git\StationeersMods\StationGodMCP\package',
     [string] $World = 'G:\StationeersRigs\worlds\two-docks',
@@ -51,7 +53,8 @@ Write-Host "skip-aegis-proof: SES $sesVersion built from $sesSha, HEAD $((git -C
 $aegisHead = $null
 if ($Run -eq 'a') {
     $stamp = Get-Content -Raw "$AegisCheckout\package.stamp" | ConvertFrom-Json
-    $aegisHead = (git -C $AegisCheckout rev-parse main).Trim()
+    $aegisHead = if ($AegisCommit) { (git -C $AegisCheckout rev-parse $AegisCommit).Trim() } else { (git -C $AegisCheckout rev-parse main).Trim() }
+    if ($AegisCommit -and $aegisHead -ne $stamp.head) { Write-Host "refused: -AegisCommit $aegisHead is not the built package's commit $($stamp.head)"; exit 3 }
     $aegisMoved = @(git -C $AegisCheckout diff --name-only $stamp.head $aegisHead | ? { $_ -match '^(src/|About/|GameData/|Thruster/|Helmet/|Orb/|Assets/|Directory\.Build\.|[^/]*\.csproj$|[^/]*\.sln$|build\.ps1$)' })
     if ($aegisMoved.Count) { Write-Host "refused: Aegis's package is from $($stamp.head), main is $aegisHead and changed $($aegisMoved -join ', '): build Aegis first"; exit 3 }
     if (-not (Test-Path "$AegisCheckout\package\Aegis.dll")) { Write-Host 'refused: no Aegis package'; exit 3 }
@@ -105,3 +108,4 @@ try { $code = Invoke-RigEntry -Entry "$rig\host\vm-client-run.ps1" -Params $p -W
 finally { Remove-Item -Recurse -Force $stage -ErrorAction SilentlyContinue }
 Write-Host "skip-aegis-proof: run $Run vm-client-run exit $code (SES $sesVersion $sesSha$(if ($aegisHead) { ", Aegis $aegisHead" }))"
 exit $code
+
