@@ -83,14 +83,9 @@ internal static class SuitSlotLayout
                 return true;
             default:
                 garment = Garment.Suit;
-                return thing is Suit or SuitBase || HasSuitName(thing.PrefabName ?? string.Empty);
+                return thing is Suit or SuitBase || SuitNames.LooksLikeSuit(thing.PrefabName);
         }
     }
-
-    private static bool HasSuitName(string name) =>
-        name.IndexOf("Suit", StringComparison.OrdinalIgnoreCase) >= 0 ||
-        name.IndexOf("Icarus", StringComparison.OrdinalIgnoreCase) >= 0 ||
-        name.IndexOf("Armor", StringComparison.OrdinalIgnoreCase) >= 0;
 
     private static bool TryGetTemplate(List<Slot> slots, out Slot template)
     {
