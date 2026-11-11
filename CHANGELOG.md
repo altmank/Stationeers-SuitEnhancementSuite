@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.3
+
+- **The Aegis helmet is now left alone too, and the Aegis suit is also recognised by name.**
+
 ## 0.7.2
 
 - **Aegis suits are left alone.** Suits from the Aegis mod get no slots from SES. Without Aegis nothing changes.

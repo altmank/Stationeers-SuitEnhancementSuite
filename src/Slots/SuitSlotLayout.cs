@@ -30,8 +30,10 @@ internal static class SuitSlotLayout
     private static readonly Dictionary<Type, bool> ExcludedTypes = new();
 
     /// <summary>
-    /// True for another mod's suit that SES leaves alone (Aegis). The type chain decides because PrefabName is not
-    /// populated during save deserialization; the prefab name is checked too and is never cached. Walks BaseType only,
+    /// True for another mod's clothing that SES leaves alone (the Aegis suit and helmet). The type chain catches the suit;
+    /// the prefab name catches the helmet, whose type is the vanilla helmet class. Thing.Create sets PrefabName after
+    /// Instantiate has run Awake, so the name is checked on every call and never cached; it is set wherever the
+    /// name-based suit classification can match, so the two always agree. Walks BaseType only,
     /// so nothing throws when Aegis is not installed.
     /// </summary>
     internal static bool IsExcluded(Thing thing)
@@ -43,10 +45,10 @@ internal static class SuitSlotLayout
             var names = new List<string>();
             for (var t = type; t != null; t = t.BaseType)
                 names.Add(t.FullName);
-            byType = SuitExclusion.IsExcluded(names, null);
+            byType = SuitExclusion.IsExcludedType(names);
             ExcludedTypes[type] = byType;
         }
-        return byType || SuitExclusion.IsExcluded(null, thing.PrefabName);
+        return byType || SuitExclusion.IsExcludedPrefab(thing.PrefabName);
     }
 
     public static bool TryFindSlot(List<Slot> slots, string key, out Slot slot)
