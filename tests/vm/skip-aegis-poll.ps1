@@ -35,7 +35,7 @@ $spSlots = { param($name, $id)
     $spS = if ($spA.ok) { Get-SkipAegisSlots $spA.reply } else { @{ method = 'none'; names = @() } }
     # A key list shorter than the device's slot_count is partial: the complete label list from inspect contents is used instead.
     $spPartial = ($spS.method -eq 'key' -and $spS.expected -gt 0 -and @($spS.names).Count -lt $spS.expected)
-    if ($spPartial) { Rig-Log "skip-aegis: slots of $name: inspect slots gave $(@($spS.names).Count) of $($spS.expected) keys, reading by contents" }
+    if ($spPartial) { Rig-Log "skip-aegis: slots of ${name}: inspect slots gave $(@($spS.names).Count) of $($spS.expected) keys, reading by contents" }
     if ($spS.method -ne 'key' -or $spPartial) {
         $spB = & $spTry "contents-$name" inspect @{ what = 'contents'; id = "$id"; depth = 1; include = @('empty') }
         $spS2 = if ($spB.ok) { Get-SkipAegisSlots $spB.reply } else { @{ method = 'none'; names = @() } }
