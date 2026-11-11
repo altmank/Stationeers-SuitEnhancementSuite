@@ -1,0 +1,14 @@
+<Project>
+  <!--
+    Reproducible: the same commit builds byte-identical dlls in any folder. Deterministic (the SDK default) already
+    drops the build time; the repo's own folder was the only other input, through the PDB path in the dll's CodeView
+    entry and the source paths. PathMap writes the repo root as /_/ instead. This file lives in src\, not the repo
+    root: a root props would also reach tests\, which find fixtures by CallerFilePath.
+  -->
+  <PropertyGroup>
+    <RepoRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..'))</RepoRoot>
+    <PathMap>$(RepoRoot)=/_/</PathMap>
+    <!-- SourceLink would otherwise write the checkout's own path into the PDB (and so the DLL's debug id). -->
+    <DeterministicSourcePaths>true</DeterministicSourcePaths>
+  </PropertyGroup>
+</Project>
