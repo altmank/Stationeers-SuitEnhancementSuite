@@ -39,7 +39,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
 # The mod name is the csproj name (not the folder: a worktree folder is named for its branch).
-$name = @(Get-ChildItem (Join-Path $root 'src') -Filter *.csproj)[0].BaseName
+$projects = @(Get-ChildItem (Join-Path $root 'src') -Filter *.csproj)
+if ($projects.Count -ne 1) { throw "Expected exactly one csproj in src, found $($projects.Count)." }
+$name = $projects[0].BaseName
 $package = Join-Path $root 'package'
 
 function Invoke-Deploy {

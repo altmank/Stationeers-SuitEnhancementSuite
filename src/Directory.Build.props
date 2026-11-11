@@ -8,5 +8,7 @@
   <PropertyGroup>
     <RepoRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..'))</RepoRoot>
     <PathMap>$(RepoRoot)=/_/</PathMap>
+    <!-- SourceLink would otherwise write the checkout's own path into the PDB (and so the DLL's debug id). -->
+    <DeterministicSourcePaths>true</DeterministicSourcePaths>
   </PropertyGroup>
 </Project>
