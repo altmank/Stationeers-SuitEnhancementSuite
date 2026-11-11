@@ -31,9 +31,12 @@ $spCmd = { param($name, $line)
     [pscustomobject]@{ ok = $spX.ok; out = $spOut } }
 # A suit's slots: `inspect slots` (string_key) first, `inspect contents` (display_name) when that refuses; the raw replies are kept.
 $spSlots = { param($name, $id)
-    $spA = & $spTry "slots-$name" inspect @{ what = 'slots'; id = "$id"; whole = $true }
+    $spA = & $spTry "slots-$name" inspect @{ what = 'slots'; id = "$id"; list_limits = @{ slots = 64 } }
     $spS = if ($spA.ok) { Get-SkipAegisSlots $spA.reply } else { @{ method = 'none'; names = @() } }
-    if ($spS.method -ne 'key') {
+    # A key list shorter than the device's slot_count is partial: the complete label list from inspect contents is used instead.
+    $spPartial = ($spS.method -eq 'key' -and $spS.expected -gt 0 -and @($spS.names).Count -lt $spS.expected)
+    if ($spPartial) { Rig-Log "skip-aegis: slots of $name: inspect slots gave $(@($spS.names).Count) of $($spS.expected) keys, reading by contents" }
+    if ($spS.method -ne 'key' -or $spPartial) {
         $spB = & $spTry "contents-$name" inspect @{ what = 'contents'; id = "$id"; depth = 1; include = @('empty') }
         $spS2 = if ($spB.ok) { Get-SkipAegisSlots $spB.reply } else { @{ method = 'none'; names = @() } }
         if ($spS2.method -ne 'none') { $spS = $spS2; $spA = $spB }
@@ -186,4 +189,5 @@ switch ($spStep) {
     'idle' { $spNext = $false }
 }
 if ($spNext) { $sp.i++ }
+
 
