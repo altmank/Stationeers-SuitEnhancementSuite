@@ -86,6 +86,7 @@ function Get-SkipAegisVerdict([string] $mode, $facts, [string] $logText) {
 
     # The worn vanilla suit (run b) or the loose one (run a) has every SES slot.
     if (-not $facts.vanillaSlots -or $facts.vanillaSlots.method -eq 'none') { $missing.Add('the vanilla suit slots were not read') }
+    elseif ($facts.vanillaSlots.method -ne 'key') { $missing.Add("the vanilla suit slots were read by $($facts.vanillaSlots.method), not by key: a label cannot tell SES's Water from another mod's") }
     else {
         $m = Test-SkipAegisSesSlotsComplete $facts.vanillaSlots ([bool]$facts.vanillaAdvanced)
         if ($m.Count -gt 0) { $missing.Add("the vanilla suit lacks SES slots: $($m -join ', ') (read by $($facts.vanillaSlots.method): $($facts.vanillaSlots.names -join ', '))") }
@@ -95,6 +96,7 @@ function Get-SkipAegisVerdict([string] $mode, $facts, [string] $logText) {
     if ($mode -eq 'a') {
         if (-not $facts.aegisSlots -or $facts.aegisSlots.method -eq 'none') { $missing.Add('the Aegis suit slots were not read') }
         else {
+            if ($facts.aegisSlots.method -ne 'key') { $missing.Add("the Aegis suit slots were read by $($facts.aegisSlots.method), not by key: Aegis has its own Water slot, a label cannot tell it from SES's") }
             $ses = Get-SkipAegisSesSlots $facts.aegisSlots
             if ($ses.Count -gt 0) { $missing.Add("the Aegis suit has SES slots: $($ses -join ', ')") }
             $exp = if ($facts.aegisSlots.ContainsKey('expected')) { [int]$facts.aegisSlots.expected } else { 0 }
@@ -115,5 +117,6 @@ function Get-SkipAegisVerdict([string] $mode, $facts, [string] $logText) {
     # A plain array (never a list inside an array): callers wrap it in @() and count it.
     return $missing.ToArray()
 }
+
 
 

@@ -34,14 +34,25 @@ $spSlots = { param($name, $id)
     $spA = & $spTry "slots-$name" inspect @{ what = 'slots'; id = "$id"; list_limits = @{ slots = 64 } }
     $spS = if ($spA.ok) { Get-SkipAegisSlots $spA.reply } else { @{ method = 'none'; names = @() } }
     # A key list shorter than the device's slot_count is partial: the complete label list from inspect contents is used instead.
+    $spRowsOverride = $null
     $spPartial = ($spS.method -eq 'key' -and $spS.expected -gt 0 -and @($spS.names).Count -lt $spS.expected)
+    if ($spPartial) {
+        # The full read is cut by the reply budget (21 slots of logic values): read each slot alone, 'inspect slots slot=<i>'.
+        $spKeys = @(); $spAll = $true; $spRowsAll = @()
+        for ($spI = 0; $spI -lt $spS.expected; $spI++) {
+            $spOne = & $spTry "slots-$name-$spI" inspect @{ what = 'slots'; id = "$id"; slot = $spI }
+            $spRow = if ($spOne.ok) { @($spOne.reply.result.slots)[0] } else { $null }
+            if ($spRow -and $spRow.PSObject.Properties['string_key'] -and "$($spRow.string_key)" -ne '') { $spKeys += "$($spRow.string_key)"; $spRowsAll += $spRow } else { $spAll = $false }
+        }
+        if ($spAll -and $spKeys.Count -eq $spS.expected) { $spS = @{ method = 'key'; names = $spKeys; expected = $spS.expected }; $spPartial = $false; $spRowsOverride = $spRowsAll }
+    }
     if ($spPartial) { Rig-Log "skip-aegis: slots of ${name}: inspect slots gave $(@($spS.names).Count) of $($spS.expected) keys, reading by contents" }
     if ($spS.method -ne 'key' -or $spPartial) {
         $spB = & $spTry "contents-$name" inspect @{ what = 'contents'; id = "$id"; depth = 1; include = @('empty') }
         $spS2 = if ($spB.ok) { Get-SkipAegisSlots $spB.reply } else { @{ method = 'none'; names = @() } }
         if ($spS2.method -ne 'none') { $spS = $spS2; $spA = $spB }
     }
-    $spRows = @(); if ($spA.ok -and $spA.reply.result.slots) { $spRows = @($spA.reply.result.slots) }
+    $spRows = @(); if ($spA.ok -and $spA.reply.result.slots) { $spRows = @($spA.reply.result.slots) }; if ($spRowsOverride) { $spRows = @($spRowsOverride) }
     Rig-Log "skip-aegis: slots of $name ($id) read by $($spS.method): $($spS.names -join ', ')"
     [pscustomobject]@{ slots = $spS; rows = $spRows } }
 # The slot index of the row whose string_key is $key or whose display_name is $label.
@@ -165,6 +176,14 @@ switch ($spStep) {
         }
     }
     'capture' {
+        if ($spMode -eq 'a') {
+            # A suit lying loose is not a device; held, it is: the Hardsuit goes into the player's left hand so inspect slots gives its keys.
+            $spP = & $spCall 'player-for-hold' inspect @{ what = 'contents'; id = 'player'; depth = 1; include = @('empty') }
+            $spHand = Find-AegisSlot $spP.reply 'Left Hand'
+            if ($null -eq $spHand) { & $spFail 'no Left Hand slot to hold the Hardsuit in' }
+            $null = & $spCall 'hold-vanilla' move @{ what = 'item'; id = "$($sp.vanId)"; to = 'player'; slot = [int]$spHand; confirm = $true }
+            & $spWait 2
+        }
         $sp.van = & $spSlots 'vanilla' $sp.vanId
         $sp.aeg = $null
         if ($spMode -eq 'a') { $sp.aeg = & $spSlots 'aegis' $sp.aegisId }
@@ -173,12 +192,14 @@ switch ($spStep) {
     }
     'verdict' {
         $spPat = 'Suit Enhancement Suite|SuitEnhancementSuite|Aegis \d|Auto consume|Auto swap|Shared power|^\[(Error|Fatal|Warning)'
-        $spText = (@(& $spLines $spPat) -join "`n")
+        $spText = (@(& $spLines $spPat) -join "
+")
         $spFacts = [ordered]@{
             aegisSlots = if ($sp.aeg) { $sp.aeg.slots } else { $null }
             vanillaSlots = $sp.van.slots; vanillaAdvanced = $true
             player = $sp.player; observedSeconds = [int]$sp.observed; needsLowered = [int]$sp.lowered; controlLines = [int]$sp.controlLines
-            afterText = $(if ($spMode -eq 'a') { (@(Invoke-Rig -ArgumentList $spLog, $sp.logMark { param($f, $m) if (Test-Path $f) { Get-Content -LiteralPath $f | Select-Object -Skip $m | ? { $_ -match 'Auto consume|Auto swap|Shared power' } } }) -join "`n") } else { '' })
+            afterText = $(if ($spMode -eq 'a') { (@(Invoke-Rig -ArgumentList $spLog, $sp.logMark { param($f, $m) if (Test-Path $f) { Get-Content -LiteralPath $f | Select-Object -Skip $m | ? { $_ -match 'Auto consume|Auto swap|Shared power' } } }) -join "
+") } else { '' })
         }
         try { ([ordered]@{ mode = $spMode; facts = $spFacts; log = $spText } | ConvertTo-Json -Depth 8) | Set-Content -Encoding utf8 (Join-Path $r.Res 'skip-facts.json') } catch {}
         $spM = @(Get-SkipAegisVerdict $spMode $spFacts $spText)
@@ -189,6 +210,9 @@ switch ($spStep) {
     'idle' { $spNext = $false }
 }
 if ($spNext) { $sp.i++ }
+
+
+
 
 
 

@@ -36,7 +36,7 @@ Check ((Get-SkipAegisSlots (Reply @())).method -eq 'none') 'a reply with no rows
 
 # Run a
 Check ((Judge 'a' (Facts $aegisK $vanK) $good).Count -eq 0) 'a: keys, clean log: PASS'
-Check ((Judge 'a' (Facts $aegisL $vanL) $good).Count -eq 0) 'a: labels, clean log: PASS'
+$v = Judge 'a' (Facts $aegisL $vanL) $good; Check ((Mentions $v 'Aegis suit slots were read by label') -and (Mentions $v 'vanilla suit slots were read by label')) 'a: label reads FAIL (a label cannot tell SES''s Water from Aegis''s)'
 $v = Judge 'a' (Facts $null $vanK) $good; Check ((Mentions $v 'Aegis suit slots were not read')) 'a: no Aegis slot capture FAILS'
 $v = Judge 'a' (Facts $aegisK $null) $good; Check ((Mentions $v 'vanilla suit slots were not read')) 'a: no vanilla slot capture FAILS'
 $bad = Get-SkipAegisSlots (Reply @($aegisKeyRows + (KeyRow 20 'SuitEnhancementSuiteWater')))
@@ -86,7 +86,7 @@ if (Test-Path $RecordedReply) {
         Check ($rec.method -eq 'label' -and $rec.names.Count -ge 5) "the recorded Aegis suit reply reads ($($rec.names.Count) slots, by $($rec.method))"
         Check ((Get-SkipAegisSesSlots $rec).Count -eq 0) 'the recorded Aegis suit has no SES slot'
         $v = Judge 'a' (Facts $rec $vanL) $good
-        Check ($v.Count -eq 0) "a: the recorded Aegis suit with a vanilla capture: PASS ($($v -join '; '))"
+        Check ((Mentions $v 'Aegis suit slots were read by label')) 'a: the recorded Aegis suit read by label is refused, for that reason'
     }
     else { Check $false "the recorded reply $RecordedReply is empty" }
 }
@@ -94,5 +94,6 @@ else { Write-Host "info: no recorded reply at $RecordedReply; the recorded-reply
 
 if ($script:fails) { Write-Host "$script:fails check(s) FAILED"; exit 1 }
 Write-Host 'all checks passed'
+
 
 
