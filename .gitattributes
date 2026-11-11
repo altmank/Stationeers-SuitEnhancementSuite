@@ -3,3 +3,4 @@
 *.png binary
 *.dll binary
 *.pdb binary
+CHANGELOG.md merge=union
