@@ -14,7 +14,7 @@ $spPipe = $env:SES_PROOF_PIPE
 $spMode = $env:SES_PROOF_MODE
 if (-not $r.Info.Contains('sp')) { $r.Info.sp = [ordered]@{ i = 0; until = (Get-Date).AddSeconds(-1).ToString('o'); tries = 0; t0 = $null; lastTick = $null; lowered = 0; heals = 0 } }
 $sp = $r.Info.sp
-$spSteps = @('wait', 'selfcheck', 'equip', 'needs', 'capture', 'verdict', 'idle')
+$spSteps = @('wait', 'selfcheck', 'control', 'equip', 'needs', 'capture', 'verdict', 'idle')
 if ((Get-Date) -lt [datetime]$sp.until) { return }
 
 $spLog = if ($bepLog) { $bepLog } else { 'C:\StationeersRigs\Client\BepInEx\LogOutput.log' }
@@ -31,7 +31,7 @@ $spCmd = { param($name, $line)
     [pscustomobject]@{ ok = $spX.ok; out = $spOut } }
 # A suit's slots: `inspect slots` (string_key) first, `inspect contents` (display_name) when that refuses; the raw replies are kept.
 $spSlots = { param($name, $id)
-    $spA = & $spTry "slots-$name" inspect @{ what = 'slots'; id = "$id" }
+    $spA = & $spTry "slots-$name" inspect @{ what = 'slots'; id = "$id"; whole = $true }
     $spS = if ($spA.ok) { Get-SkipAegisSlots $spA.reply } else { @{ method = 'none'; names = @() } }
     if ($spS.method -ne 'key') {
         $spB = & $spTry "contents-$name" inspect @{ what = 'contents'; id = "$id"; depth = 1; include = @('empty') }
@@ -78,6 +78,21 @@ switch ($spStep) {
         if (-not $spSes -or ($spMode -eq 'a' -and -not $spAeg)) { $spNext = $false; if ($sp.tries++ -gt 60) { & $spFail "no loaded line (SES $spSes, Aegis $spAeg; mode $spMode)" }; & $spWait 5; break }
         Rig-Log "skip-aegis: $($spL -join ' | ')"
     }
+    'control' {
+        # Positive control (run a): while the player still wears the start suit, SES must serve them (an auto-consume line), or a quiet log
+        # after the Aegis suit goes on would prove nothing. Needs lowered; the suit's own Water and Food slots refill from the inventory.
+        if ('a' -ne $spMode) { break }
+        if (-not $sp.t0c) { $sp.t0c = (Get-Date).ToString('o') }
+        $spN = & $spCmd 'ctl-nutrition' "player setnutrition $($sp.player) 8"
+        $spH = & $spCmd 'ctl-hydration' "player sethydration $($sp.player) 8"
+        $spC = & $spLines "Auto consume: $([regex]::Escape($sp.player)) "
+        if (@($spC).Count -lt 1) {
+            if (((Get-Date) - [datetime]$sp.t0c).TotalSeconds -gt 60) { & $spFail 'control: SES never served the player in the start suit (no Auto consume line in 60 s)' }
+            $spNext = $false; & $spWait 5; break
+        }
+        $sp.controlLines = @($spC).Count
+        Rig-Log "skip-aegis: control: SES served the player in the start suit ($($sp.controlLines) consume line(s)): $(@($spC)[0])"
+    }
     'equip' {
         $spP = & $spCall 'player-start' inspect @{ what = 'contents'; id = 'player'; depth = 1; include = @('empty') }
         $spSuitSlot = [int](Find-AegisSlot $spP.reply '^Suit\b')
@@ -90,7 +105,8 @@ switch ($spStep) {
             $spRow = Get-AegisRow $spP.reply $spSuitSlot
             if ($spRow.occupant.prefab_name -ne 'ItemSuitAegis') { & $spFail 'the suit slot does not hold ItemSuitAegis' }
             if (-not $sp.aegisId) { $sp.aegisId = "$($spRow.occupant.reference_id)" }
-            # The vanilla suit lies on the ground beside the player: a Hardsuit, an advanced suit with all five SES keys.
+            $sp.logMark = [int](Invoke-Rig -ArgumentList $spLog { param($f) if (Test-Path $f) { @(Get-Content -LiteralPath $f).Count } else { 0 } })
+            Rig-Log "skip-aegis: log mark $($sp.logMark): lines after it are judged for the Aegis wearer"            # The vanilla suit lies on the ground beside the player: a Hardsuit, an advanced suit with all five SES keys.
             $spAt = @(($sp.pos[0] + 2), ($sp.pos[1] + 0.5), $sp.pos[2])
             $spX = & $spCall 'build-vanilla' build @{ what = 'item'; prefab = 'ItemHardSuit'; at = $spAt; confirm = $true }
             $sp.vanId = & $spPlaced $spX
@@ -126,11 +142,11 @@ switch ($spStep) {
             $spN = & $spCmd 'nutrition' "player setnutrition $($sp.player) 8"
             $spH = & $spCmd 'hydration' "player sethydration $($sp.player) 8"
             if ($spN.out -match 'Setting nutrition' -and $spH.out -match 'Setting hydration') { $sp.lowered++ }
-            $null = & $spTry 'heal' write @{ what = 'health'; player = 'player'; confirm = $true }
+            $null = & $spTry 'heal' write @{ what = 'health'; player = $sp.player; confirm = $true }
         }
         else {
             # Between the console ticks: a heal every pass, so the vacuum never leaves the wearer dead (a dead player is skipped by SES anyway).
-            $null = & $spTry 'heal' write @{ what = 'health'; player = 'player'; confirm = $true }
+            $null = & $spTry 'heal' write @{ what = 'health'; player = $sp.player; confirm = $true }
         }
         $sp.heals++
         $spC = & $spLines 'Auto consume:|Auto swap:'
@@ -158,7 +174,8 @@ switch ($spStep) {
         $spFacts = [ordered]@{
             aegisSlots = if ($sp.aeg) { $sp.aeg.slots } else { $null }
             vanillaSlots = $sp.van.slots; vanillaAdvanced = $true
-            player = $sp.player; observedSeconds = [int]$sp.observed; needsLowered = [int]$sp.lowered
+            player = $sp.player; observedSeconds = [int]$sp.observed; needsLowered = [int]$sp.lowered; controlLines = [int]$sp.controlLines
+            afterText = $(if ($spMode -eq 'a') { (@(Invoke-Rig -ArgumentList $spLog, $sp.logMark { param($f, $m) if (Test-Path $f) { Get-Content -LiteralPath $f | Select-Object -Skip $m | ? { $_ -match 'Auto consume|Auto swap|Shared power' } } }) -join "`n") } else { '' })
         }
         try { ([ordered]@{ mode = $spMode; facts = $spFacts; log = $spText } | ConvertTo-Json -Depth 8) | Set-Content -Encoding utf8 (Join-Path $r.Res 'skip-facts.json') } catch {}
         $spM = @(Get-SkipAegisVerdict $spMode $spFacts $spText)
@@ -169,3 +186,4 @@ switch ($spStep) {
     'idle' { $spNext = $false }
 }
 if ($spNext) { $sp.i++ }
+

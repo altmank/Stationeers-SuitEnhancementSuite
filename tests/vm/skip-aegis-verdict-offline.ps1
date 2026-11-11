@@ -16,10 +16,10 @@ if ($RunDir) { if (-not $FactsFile) { $FactsFile = Join-Path $RunDir 'skip-facts
 foreach ($p in $FactsFile, $LogFile) { if (-not $p -or -not (Test-Path $p)) { Write-Host "no input: '$p'"; exit 3 } }
 $saved = Get-Content -Raw $FactsFile | ConvertFrom-Json
 if (-not $Mode) { $Mode = "$($saved.mode)" }
-$facts = @{ player = "$($saved.facts.player)"; observedSeconds = $saved.facts.observedSeconds; needsLowered = $saved.facts.needsLowered; vanillaAdvanced = [bool]$saved.facts.vanillaAdvanced }
+$facts = @{ player = "$($saved.facts.player)"; observedSeconds = $saved.facts.observedSeconds; needsLowered = $saved.facts.needsLowered; vanillaAdvanced = [bool]$saved.facts.vanillaAdvanced; controlLines = $saved.facts.controlLines; afterText = $saved.facts.afterText }
 foreach ($k in 'aegisSlots', 'vanillaSlots') {
     $s = $saved.facts.$k
-    $facts[$k] = if ($s -and $s.method) { @{ method = "$($s.method)"; names = @($s.names | ForEach-Object { "$_" }) } } else { $null }
+    $facts[$k] = if ($s -and $s.method) { @{ method = "$($s.method)"; names = @($s.names | ForEach-Object { "$_" }); expected = [int]$s.expected } } else { $null }
 }
 $logText = if ($FactsLog) { "$($saved.log)" } else { Get-Content -Raw $LogFile }
 $missing = @(Get-SkipAegisVerdict $Mode $facts $logText)
@@ -27,3 +27,4 @@ if ($missing.Count -eq 0) { Write-Host "PASS (mode $Mode, player '$($facts.playe
 Write-Host "FAIL (mode $Mode): $($missing.Count) missing"
 $missing | ForEach-Object { Write-Host "  - $_" }
 exit 1
+

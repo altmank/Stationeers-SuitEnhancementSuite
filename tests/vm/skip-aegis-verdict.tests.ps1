@@ -19,8 +19,8 @@ $vanLabelRows = @(@(LabelRow 0 'Air Tank') + @(LabelRow 9 'Water'; LabelRow 10 '
 $good = "[Info   :   BepInEx] Loading [Suit Enhancement Suite 0.7.2]`n[Info   :Suit Enhancement Suite] Suit Enhancement Suite 0.7.2 loaded: auto consume on`n[Info   :Aegis] Aegis 0.1.0 loaded.`n[Warning: Lattice] unrelated warning"
 $goodB = "[Info   :Suit Enhancement Suite] Suit Enhancement Suite 0.7.2 loaded: auto consume on`n[Debug  :Suit Enhancement Suite] Auto consume: Recruit used 1 of ItemCerealBar, Nutrition 20 -> 21"
 
-function Facts($aegis, $van, $adv = $true, $secs = 130, $lowered = 8) {
-    @{ aegisSlots = $aegis; vanillaSlots = $van; vanillaAdvanced = $adv; player = 'Recruit'; observedSeconds = $secs; needsLowered = $lowered }
+function Facts($aegis, $van, $adv = $true, $secs = 130, $lowered = 8, $after = '', $control = 1) {
+    @{ aegisSlots = $aegis; vanillaSlots = $van; vanillaAdvanced = $adv; player = 'Recruit'; observedSeconds = $secs; needsLowered = $lowered; afterText = $after; controlLines = $control }
 }
 $aegisK = Get-SkipAegisSlots (Reply $aegisKeyRows); $vanK = Get-SkipAegisSlots (Reply $vanKeyRows)
 $aegisL = Get-SkipAegisSlots (Reply $aegisLabelRows); $vanL = Get-SkipAegisSlots (Reply $vanLabelRows)
@@ -50,8 +50,14 @@ $three = Get-SkipAegisSlots (Reply @(KeyRow 9 'SuitEnhancementSuiteWater'; KeyRo
 $v = Judge 'a' (Facts $aegisK $three $true) $good; Check ((Mentions $v 'SharedPower')) 'a: an advanced suit missing Shared Power FAILS'
 $v = Judge 'a' (Facts $aegisK $vanK $true 60) $good; Check ((Mentions $v 'under 120 s')) 'a: a 60 s watch FAILS'
 $v = Judge 'a' (Facts $aegisK $vanK $true 130 0) $good; Check ((Mentions $v 'never lowered')) 'a: needs never lowered FAILS'
-$v = Judge 'a' (Facts $aegisK $vanK) ($good + "`n[Debug  :Suit Enhancement Suite] Auto consume: Recruit used 1 of ItemCerealBar, Nutrition 20 -> 21"); Check ((Mentions $v 'name the Aegis wearer')) 'a: a consume line naming the wearer FAILS'
-$v = Judge 'a' (Facts $aegisK $vanK) ($good + "`n[Info   :Suit Enhancement Suite] Auto swap: Recruit's Water slot was empty, now holds ItemWaterPacket from ItemToolBelt."); Check ((Mentions $v 'name the Aegis wearer')) 'a: a swap line naming the wearer FAILS'
+$cl = "[Debug  :Suit Enhancement Suite] Auto consume: Recruit used 1 of ItemCerealBar, Nutrition 20 -> 21"
+$v = Judge 'a' (Facts $aegisK $vanK $true 130 8 $cl) $good; Check ((Mentions $v 'name the Aegis wearer')) 'a: a consume line naming the wearer after the swap FAILS'
+$v = Judge 'a' (Facts $aegisK $vanK) ($good + "`n$cl"); Check ($v.Count -eq 0) 'a: the same line before the swap (the EVA suit''s) is not held against Aegis'
+$v = Judge 'a' (Facts $aegisK $vanK $true 130 8 $null) $good; Check ((Mentions $v 'after the Aegis suit was worn were not captured')) 'a: no after-swap capture FAILS'
+$v = Judge 'a' (Facts $aegisK $vanK $true 130 8 '' 0) $good; Check ((Mentions $v 'no control')) 'a: no positive control FAILS'
+$part = Get-SkipAegisSlots ([pscustomobject]@{ ok = $true; result = [pscustomobject]@{ device = [pscustomobject]@{ slot_count = 21 }; slots = @($aegisKeyRows) } })
+$v = Judge 'a' (Facts $part $vanK) $good; Check ((Mentions $v 'of 21 Aegis suit slots')) 'a: 8 of 21 slots read FAILS (partial list)'
+$v = Judge 'a' (Facts $aegisK $vanK $true 130 8 "[Info   :Suit Enhancement Suite] Auto swap: Recruit's Water slot was empty, now holds ItemWaterPacket from ItemToolBelt.") $good; Check ((Mentions $v 'name the Aegis wearer')) 'a: a swap line naming the wearer FAILS'
 $v = Judge 'a' (Facts $aegisK $vanK) ($good + "`n[Debug  :Suit Enhancement Suite] Auto consume: Someone Else used 1 of X"); Check ($v.Count -eq 0) 'a: a consume line for another player is not the wearer''s'
 $v = Judge 'a' (Facts $aegisK $vanK) ($good + "`n[Error  :Suit Enhancement Suite] boom"); Check ((Mentions $v 'SES error')) 'a: an SES error line FAILS'
 $v = Judge 'a' (Facts $aegisK $vanK) ($good + "`n[Warning:Suit Enhancement Suite] Auto consume skipped a player or pass"); Check ((Mentions $v 'SES error')) 'a: an SES warning FAILS'
@@ -88,3 +94,5 @@ else { Write-Host "info: no recorded reply at $RecordedReply; the recorded-reply
 
 if ($script:fails) { Write-Host "$script:fails check(s) FAILED"; exit 1 }
 Write-Host 'all checks passed'
+
+

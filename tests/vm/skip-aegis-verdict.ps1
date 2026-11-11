@@ -15,7 +15,8 @@ function Get-SkipAegisSlots($reply) {
     $rows = @($res.slots)
     if ($rows.Count -eq 0 -or $null -eq $rows[0]) { return $none }
     $keys = @($rows | Where-Object { $_.PSObject.Properties['string_key'] -and "$($_.string_key)" -ne '' } | ForEach-Object { "$($_.string_key)" })
-    if ($keys.Count -gt 0) { return @{ method = 'key'; names = $keys } }
+    $expected = 0; if ($res.PSObject.Properties['device'] -and $res.device -and $res.device.PSObject.Properties['slot_count']) { $expected = [int]$res.device.slot_count }
+    if ($keys.Count -gt 0) { return @{ method = 'key'; names = $keys; expected = $expected } }
     $labels = @($rows | Where-Object { $_.PSObject.Properties['display_name'] } | ForEach-Object { "$($_.display_name)" })
     if ($labels.Count -eq 0) { return $none }
     @{ method = 'label'; names = $labels }
@@ -96,11 +97,15 @@ function Get-SkipAegisVerdict([string] $mode, $facts, [string] $logText) {
         else {
             $ses = Get-SkipAegisSesSlots $facts.aegisSlots
             if ($ses.Count -gt 0) { $missing.Add("the Aegis suit has SES slots: $($ses -join ', ')") }
+            $exp = if ($facts.aegisSlots.ContainsKey('expected')) { [int]$facts.aegisSlots.expected } else { 0 }
+            if ($exp -gt 0 -and @($facts.aegisSlots.names).Count -lt $exp) { $missing.Add("only $(@($facts.aegisSlots.names).Count) of $exp Aegis suit slots were read (a partial list proves nothing about the rest)") }
             if (@($facts.aegisSlots.names).Count -lt 5) { $missing.Add("the Aegis suit reads only $(@($facts.aegisSlots.names).Count) slot(s): not an Aegis suit's list") }
         }
         if ([double]$facts.observedSeconds -lt 120) { $missing.Add("the needs were watched for $($facts.observedSeconds) s, under 120 s") }
         if ([int]$facts.needsLowered -lt 1) { $missing.Add('the needs were never lowered (no console set command succeeded)') }
-        $acts = Get-SkipAegisActionLines $logText "$($facts.player)"
+        if ($null -eq $facts.afterText) { $missing.Add('the log lines after the Aegis suit was worn were not captured') }
+        if ([int]$facts.controlLines -lt 1) { $missing.Add('no control: SES was never seen serving the player (an auto-consume line) before the Aegis suit went on, so a quiet log proves nothing') }
+        $acts = Get-SkipAegisActionLines "$($facts.afterText)" "$($facts.player)"
         if ($acts.Count -gt 0) { $missing.Add("$($acts.Count) SES action line(s) name the Aegis wearer, first: $("$($acts[0])".Substring(0, [Math]::Min(200, "$($acts[0])".Length)))") }
     }
     else {
@@ -110,4 +115,5 @@ function Get-SkipAegisVerdict([string] $mode, $facts, [string] $logText) {
     # A plain array (never a list inside an array): callers wrap it in @() and count it.
     return $missing.ToArray()
 }
+
 
