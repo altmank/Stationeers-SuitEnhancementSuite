@@ -1,4 +1,4 @@
-# Shared by every testsm proof (dot-source it). RigVM's host side is pwsh 7.5 only (P111): its entry scripts run in a
+# Shared by every tests\vm proof (dot-source it). RigVM's host side is pwsh 7.5 only (P111): its entry scripts run in a
 # pwsh child, never powershell.exe, so an entry's `exit` can't end the proof.
 function Invoke-RigEntry {
     [CmdletBinding()]
