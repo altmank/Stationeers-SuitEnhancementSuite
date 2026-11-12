@@ -2,3 +2,4 @@
 # run by pwsh from the repo root, exit 0 = pass. STATIONEERS_DIR (the game install) comes from the environment.
 unit | dotnet test tests/SuitEnhancementSuite.Tests --nologo
 build | Remove-Item -Recurse -Force src/obj, src/bin -ErrorAction SilentlyContinue; pwsh -NoProfile -File ./build.ps1
+keys | pwsh -NoProfile -File ./tools/tests/no-key-reads.ps1
