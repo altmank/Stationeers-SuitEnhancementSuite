@@ -1,5 +1,5 @@
-# Shared by every tests\vm proof (dot-source it). RigVM's entry scripts are `#Requires -PSEdition Desktop`, so a proof running under
-# pwsh 7 starts them as a Windows PowerShell 5.1 child; there is no in-process path.
+# Shared by every testsm proof (dot-source it). RigVM's host side is pwsh 7.5 only (P111): its entry scripts run in a
+# pwsh child, never powershell.exe, so an entry's `exit` can't end the proof.
 function Invoke-RigEntry {
     [CmdletBinding()]
     param(
@@ -10,24 +10,15 @@ function Invoke-RigEntry {
     New-Item -ItemType Directory -Force $WorkDir | Out-Null
     $pf = Join-Path $WorkDir "rigentry-$([guid]::NewGuid().ToString('N').Substring(0, 8)).clixml"
     $Params | Export-Clixml -Path $pf
-    $savedModulePath = $env:PSModulePath
     try {
         $cmd = "`$p = Import-Clixml -LiteralPath '$pf'; & '$Entry' @p; exit `$LASTEXITCODE"
-        # Exactly the Windows PowerShell module folders: pwsh 7's PSModulePath breaks 5.1's core modules.
-        $env:PSModulePath = (@(
-            (Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'WindowsPowerShell\Modules'),
-            (Join-Path $env:ProgramFiles 'WindowsPowerShell\Modules'),
-            (Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\Modules')
-        )) -join ';'
-        & powershell.exe -NoProfile -ExecutionPolicy Bypass -Command $cmd | Out-Host
+        & pwsh -NoProfile -Command $cmd | Out-Host
         return [int] $LASTEXITCODE
     } finally {
-        $env:PSModulePath = $savedModulePath
         Remove-Item -Force $pf -ErrorAction SilentlyContinue
     }
 }
 
-# A repo that sits beside this one (RigVM, Aegis, StationGodMCP): found through git's common dir, never by ..\ (a worktree is nested).
 function Get-SiblingRepo {
     param([Parameter(Mandatory)] [string] $Name, [string] $From = $PSScriptRoot)
     $common = (git -C $From rev-parse --path-format=absolute --git-common-dir 2>$null)
