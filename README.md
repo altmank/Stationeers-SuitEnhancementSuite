@@ -43,8 +43,8 @@ Every 2 seconds, for every living player (after any auto-swap, below):
   of food. A pumpkin (50) fills the whole stomach, so it would only ever fit when you are empty: below `Hunger Fallback`
   % food left a whole item is eaten anyway and the part that does not fit is lost, the same as eating it by hand.
 - After a bite or a drink, that need waits `Cooldown` seconds before the next one.
-- Raw crops count as raw food: like eating them by hand, they pull your food quality down (low food quality makes you
-  get thirsty a quarter faster). Cooked food keeps it up.
+- Raw crops count as raw food: like eating them by hand, they pull your food quality down (low food quality means you can
+  hold a quarter less water). Cooked food keeps it up.
 - Eating and drinking happen through a closed helmet.
 
 ## Waste
@@ -79,8 +79,8 @@ them. Items in your hands are never taken.
   behind), it goes into the first free inventory slot, storage before hands. With no room anywhere the swap waits
   until you make room. Nothing is ever deleted or dropped.
 - Each slot has its own switch (`Auto Swap` section), all on by default.
-- Better food quality matters: raw crops pull your food quality down, and low food quality makes you get thirsty a
-  quarter faster.
+- Better food quality matters: raw crops pull your food quality down, and low food quality means you can hold a
+  quarter less water.
 
 ## Shared Power
 
