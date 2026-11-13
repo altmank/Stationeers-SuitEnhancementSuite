@@ -18,7 +18,7 @@ Suits get Water, Food and Waste slots that keep you fed, watered and relieved au
 [/table]
 [list]
 [*]Added slots go at the end, after the clothing's own slots and any slots other mods add, so the game's slots stay where they were.
-[*]Storage slots take anything. Water takes water bottles and drinks that work like one. Food takes meals, bars, canned food, cooked vegetables and raw crops with nutrition; not seeds, eggs, pills or tools. Waste takes folded and part-filled Waste Bags, not full ones. Shared Power takes any battery cell.
+[*]Storage slots take anything. Water takes water bottles and drinks that work like one. Food takes meals, bars, canned food, cooked vegetables and raw crops you can eat; not seeds, eggs, pills or tools. Waste takes folded and part-filled Waste Bags, not full ones. Shared Power takes any battery cell.
 [/list]
 
 [hr][/hr]
@@ -94,6 +94,7 @@ Developed with the use of generative AI, and tokens aren't free. Buy me a coffee
   <ChangeLog>
 v0.7.4
 - Clearer settings descriptions and Workshop page: every setting now says what it does in plain words.
+- The hygiene row label is now English unless the game is set to Czech.
 </ChangeLog>
   <WorkshopHandle>3809431633</WorkshopHandle>
   <Tags />

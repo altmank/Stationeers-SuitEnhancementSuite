@@ -3,6 +3,7 @@
 ## 0.7.4
 
 - **Clearer settings descriptions and Workshop page:** every setting now says what it does in plain words.
+- **The hygiene row label is now English unless the game is set to Czech.**
 
 ## 0.7.3
 

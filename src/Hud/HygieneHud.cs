@@ -16,7 +16,7 @@ namespace SuitEnhancementSuite;
 /// </summary>
 internal sealed class HygieneHud
 {
-    private const string RowLabel = "Toaleta / hygiena";
+    private static string RowLabel => Localization.CurrentLanguage == LanguageCode.CS ? "Toaleta / hygiena" : "Hygiene";
     private const float SearchIntervalSeconds = 10f;
 
     private TMP_Text _value;

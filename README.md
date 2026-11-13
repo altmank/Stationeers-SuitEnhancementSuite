@@ -21,7 +21,7 @@ after any slots other mods add (for example StationeersLua's Suit Module).
 
 - **Storage** slots take anything.
 - **Water** takes water bottles and anything else drunk like one.
-- **Food** takes food: meals, bars, canned food, cooked vegetables and raw crops that have nutrition. It refuses seeds,
+- **Food** takes food: meals, bars, canned food, cooked vegetables and raw crops you can eat. It refuses seeds,
   eggs, pills and non-food items (the game shows its usual "is not" message).
 - **Waste** takes waste bags that still have room: folded (empty) Waste Bags and part-filled ones. A full bag is
   refused.
@@ -39,12 +39,12 @@ Every 2 seconds, for every living player (after any auto-swap, below):
 - **Food items** (bars, meals, cans): once your stomach is at least `Food Top-Off Margin` % empty, you eat just
   enough to be full. The rest stays in the slot.
 - **Whole items** (raw crops, cooked vegetables): one whole item is eaten, as when eating by hand, but only when all
-  of its nutrition fits, so none is wasted. A tomato (15) is eaten once 15 of the 50 nutrition points are free.
-  A pumpkin (50) fills the whole stomach, so it would only ever fit at 0: below `Hunger Fallback` % nutrition a
-  whole item is eaten anyway and the part that does not fit is lost, the same as eating it by hand.
+  of it fits in your stomach, so none is wasted. A tomato (15) is eaten once there is room for 15 of the 50 points
+  of food. A pumpkin (50) fills the whole stomach, so it would only ever fit when you are empty: below `Hunger Fallback`
+  % food left a whole item is eaten anyway and the part that does not fit is lost, the same as eating it by hand.
 - After a bite or a drink, that need waits `Cooldown` seconds before the next one.
-- Raw crops count as raw food: like eating them by hand, they pull your food quality down (low food quality lowers
-  your hydration capacity by a quarter). Cooked food keeps it up.
+- Raw crops count as raw food: like eating them by hand, they pull your food quality down (low food quality makes you
+  get thirsty a quarter faster). Cooked food keeps it up.
 - Eating and drinking happen through a closed helmet.
 
 ## Waste
@@ -79,8 +79,8 @@ them. Items in your hands are never taken.
   behind), it goes into the first free inventory slot, storage before hands. With no room anywhere the swap waits
   until you make room. Nothing is ever deleted or dropped.
 - Each slot has its own switch (`Auto Swap` section), all on by default.
-- Better food quality matters: raw crops pull your food quality down, and low food quality lowers your hydration
-  capacity by a quarter.
+- Better food quality matters: raw crops pull your food quality down, and low food quality makes you get thirsty a
+  quarter faster.
 
 ## Shared Power
 
@@ -146,7 +146,7 @@ sit in the uniform's own slots, and your access card and other uniform items sit
 ## Multiplayer
 
 Eating, drinking, waste bags, auto-swap and power sharing run on the host (or dedicated server) only; the game sends
-the results (nutrition, hydration, waste, item moves and quantities, battery charge) to everyone with its own updates. The slots are added by the
+the results (food, thirst, waste, item moves and quantities, battery charge) to everyone with its own updates. The slots are added by the
 mod on each machine, so every player needs it. A player without it sees suits, vests and uniforms with missing slots.
 
 ## Removing it
@@ -165,6 +165,7 @@ Power slots), then save. Without the mod those slots do not exist and their cont
 
 ### Not yet tried in a real game
 
+- The Aegis helmet getting no slots (only the Aegis suit has been tried).
 - The Waste slot's icon and label; full bags refused; a folded bag unfolded into the slot and filled; a part-filled
   bag refilled; a stack of folded bags split, the rest moved to storage; a full bag swapped for a folded one from the
   backpack; an empty water bottle swapped for the fullest one; food swapped in best-quality first; nothing happening
