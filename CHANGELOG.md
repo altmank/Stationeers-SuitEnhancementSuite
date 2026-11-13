@@ -1,8 +1,12 @@
 # Changelog
 
+## 0.7.4
+
+- **Clearer settings descriptions and Workshop page:** every setting now says what it does in plain words.
+
 ## 0.7.3
 
-- **The Aegis helmet is now left alone too, and the Aegis suit is also recognised by name.**
+- **Aegis helmets get no Suit Enhancement Suite slots either, and Aegis suits are now spotted more reliably.**
 
 ## 0.7.2
 
@@ -16,14 +20,13 @@
 ## 0.7.0
 
 - **Shared Power moved to advanced suits.** The two Shared Power slots now sit on the Hardsuit and the HARM suit, after
-  Waste (Hardsuit: 12 and 13), and charge while you wear the suit. Uniforms lose their Shared Power slots: take the
-  batteries out of a uniform's slots 8 and 9 before updating, or they drop at your feet on load. The Hardsuit's own
+  Waste, and charge while you wear the suit. Uniforms lose their Shared Power slots: take any batteries out of your
+  uniform's two Shared Power slots before updating, or they drop at your feet on load. The Hardsuit's own
   battery now counts as the suit battery (charged first; `Charge Suit Battery` off skips it).
-- **Slot order no longer depends on mod load order.** The mod's slots are always added after every other mod's (for
-  example StationeersLua's Suit Module). Before, items could fall out of their slots at load when another mod's slot
-  took the index first.
-- **No waste from nothing while paused.** A waste bag, water or food use now waits until the game has ticked and
-  applied the last one, so the pause menu no longer refills and burns through your bags.
+- **Items no longer fall out of added slots when you load a save.** Added slots always go after other mods' slots (for
+  example StationeersLua's Suit Module).
+- **No free refills while paused.** Using a waste bag, water or food now waits until the game has processed the last
+  one, so the pause menu no longer refills and burns through your bags.
 - **A full waste bag stays in the Waste slot** across a reload instead of dropping at your feet.
 - **Auto-swap never takes items from your hands.**
 

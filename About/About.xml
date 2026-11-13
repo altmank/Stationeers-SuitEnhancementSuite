@@ -3,7 +3,7 @@
   <Name>Suit Enhancement Suite</Name>
   <ModID>net.xceled.stationeers.suitenhancementsuite</ModID>
   <Author>XCeled</Author>
-  <Version>0.7.3</Version>
+  <Version>0.7.4</Version>
   <Description>[h1]More room and less busywork in your clothing[/h1]
 Suits get Water, Food and Waste slots that keep you fed, watered and relieved automatically, and refill themselves from your inventory. Advanced suits also get two Shared Power slots whose batteries keep your suit, tools and other batteries charged. The Marine Vest gets eight storage slots, and every uniform gets four storage slots.
 
@@ -17,7 +17,7 @@ Suits get Water, Food and Waste slots that keep you fed, watered and relieved au
 [tr][td]Uniforms (jumpsuits)[/td][td]4 storage[/td][/tr]
 [/table]
 [list]
-[*]Added slots always come after the clothing's own slots and after other mods' slots, so the game's slots keep their usual places.
+[*]Added slots go at the end, after the clothing's own slots and any slots other mods add, so the game's slots stay where they were.
 [*]Storage slots take anything. Water takes water bottles and drinks that work like one. Food takes meals, bars, canned food, cooked vegetables and raw crops with nutrition; not seeds, eggs, pills or tools. Waste takes folded and part-filled Waste Bags, not full ones. Shared Power takes any battery cell.
 [/list]
 
@@ -25,14 +25,14 @@ Suits get Water, Food and Waste slots that keep you fed, watered and relieved au
 [h2]Eating and drinking[/h2]
 [list]
 [*]Only the worn suit's Water, Food and Waste slots are used, every 2 seconds.
-[*]Keeps you topped off: drinks and eats once 1 % of the capacity is free.
-[*]Food items are eaten just up to full. Raw crops and cooked vegetables are eaten one whole item at a time, only when all of it fits; below 25 % nutrition they are eaten anyway.
+[*]Keeps you topped off: drinks and eats as soon as you are 1 % short of full (change this under Settings).
+[*]Food items are eaten just up to full. Raw crops and cooked vegetables are eaten one whole item at a time, only when all of it fits; below 25 % food left they are eaten anyway (Hunger Fallback).
 [*]Works through a closed helmet.
 [/list]
 
 [hr][/hr]
 [h2]Waste[/h2]
-The game will not let you use a toilet or a waste bag while wearing a suit, and at 100 % waste you wet the suit and end up Soiled. The Waste slot uses its bag for you, through the suit, once your waste passes 25 %, exactly as using the bag by hand would. A part-filled bag stays in the slot and is refilled until full (two full stomachs). A folded bag is unfolded into the slot.
+The game will not let you use a toilet or a waste bag while wearing a suit, and at 100 % waste you wet the suit and end up Soiled. The Waste slot uses its bag for you, through the suit, once your waste passes 25 %, exactly as using the bag by hand would. A part-filled bag stays in the slot and is refilled until full (one bag holds two full stomachs of waste). A folded bag is unfolded into the slot.
 
 [hr][/hr]
 [h2]Auto-swap[/h2]
@@ -42,33 +42,33 @@ When the Water, Food or Waste slot is empty, or holds an empty bottle, rotten fo
 [*]Food: the best food quality first (meals, then canned, cooked, raw crops); portioned food before whole items; the smallest whole item first, since it fits sooner.
 [*]Waste: a part-filled bag first, then one folded bag from a stack.
 [/list]
-The spent item goes back where the fresh one came from, or into the first free slot. Nothing is deleted or dropped: with no room, the swap waits. One switch per slot.
+The spent item goes back where the fresh one came from, or into the first free slot. Nothing is deleted or dropped: with no room, the swap waits. Each slot has its own on/off setting under Auto Swap.
 
 [hr][/hr]
 [h2]Shared Power[/h2]
-While you wear an advanced suit (Hardsuit, HARM suit), the batteries in its Shared Power slots charge the other batteries you carry, up to 500 W per battery per power tick (the Battery Cell Charger's rate):
+While you wear an advanced suit (Hardsuit, HARM suit), the batteries in its Shared Power slots charge the other batteries you carry, up to 500 W per battery, every half second (the Battery Cell Charger's rate):
 [list]
 [*]your suit's battery first,
 [*]then the batteries of what you hold in your hands,
 [*]then every other battery in a battery slot: helmet, tool belt, tools in your backpack.
 [/list]
-Within each step the emptiest battery comes first. The Shared Power battery holding less energy is used first, so it runs flat and can be swapped while the other stays full. Spare batteries in storage are not charged, and nothing is created: batteries receive what the Shared Power batteries lose.
+Within each step the emptiest battery comes first. Of the two Shared Power batteries, the one with less energy is drained first, so it runs flat and you can swap it while the other stays full. Spare batteries in storage are not charged, and nothing is created: batteries receive what the Shared Power batteries lose.
 
 [hr][/hr]
 [h2]Settings[/h2]
-StationeersLaunchPad config editor, or BepInEx/config/net.xceled.stationeers.suitenhancementsuite.cfg. Changes apply at once.
+Settings are in the StationeersLaunchPad mod settings screen. They are also in BepInEx/config/net.xceled.stationeers.suitenhancementsuite.cfg. Changes apply at once.
 [table]
 [tr][th]Setting[/th][th]Default[/th][th]What it does[/th][/tr]
 [tr][td][b]Auto Consume: Enabled[/b][/td][td]On[/td][td]Off: Water, Food and Waste are plain storage; nothing is used or swapped.[/td][/tr]
-[tr][td][b]Food Top-Off Margin[/b][/td][td]1 %[/td][td]Eat once this much of the stomach is empty (0 to 75).[/td][/tr]
-[tr][td][b]Water Top-Off Margin[/b][/td][td]1 %[/td][td]Drink once this much of the hydration capacity is empty (0 to 75).[/td][/tr]
-[tr][td][b]Hunger Fallback[/b][/td][td]25 %[/td][td]Below this nutrition a whole crop is eaten even if part is wasted (0 to 50).[/td][/tr]
+[tr][td][b]Food Top-Off Margin[/b][/td][td]1 %[/td][td]Eat once your stomach is this percent empty (0 to 75). 75 waits until you are below 25 % full.[/td][/tr]
+[tr][td][b]Water Top-Off Margin[/b][/td][td]1 %[/td][td]Drink once you are this percent short of a full drink (0 to 75). 75 waits until you are below 25 % full.[/td][/tr]
+[tr][td][b]Hunger Fallback[/b][/td][td]25 %[/td][td]Below this much food left, a whole crop is eaten even if part of it is wasted (0 to 50).[/td][/tr]
 [tr][td][b]Waste Threshold[/b][/td][td]25 %[/td][td]Use the Waste bag once waste passes this (25 to 95).[/td][/tr]
 [tr][td][b]Cooldown[/b][/td][td]3 s[/td][td]Least time between two bites, drinks or bag uses (1 to 60).[/td][/tr]
 [tr][td][b]Auto Swap: Water, Food, Waste[/b][/td][td]On[/td][td]Refill that slot from your inventory.[/td][/tr]
 [tr][td][b]Shared Power: Enabled[/b][/td][td]On[/td][td]Off: the Shared Power slots only hold batteries.[/td][/tr]
-[tr][td][b]Transfer Rate[/b][/td][td]500 W[/td][td]Most each battery receives per power tick (10 to 5000).[/td][/tr]
-[tr][td][b]Loss[/b][/td][td]0 %[/td][td]Share of the energy lost on the way (0 to 90).[/td][/tr]
+[tr][td][b]Transfer Rate[/b][/td][td]500 W[/td][td]Most power each battery receives every half second (10 to 5000).[/td][/tr]
+[tr][td][b]Loss[/b][/td][td]0 %[/td][td]Percent of the drawn power lost before it reaches the other batteries (0 to 90).[/td][/tr]
 [tr][td][b]Charge Suit Battery[/b][/td][td]On[/td][td]Off: the suit's battery is left alone.[/td][/tr]
 [/table]
 
@@ -79,7 +79,7 @@ Take everything out of the added slots (Water, Food, Waste, storage, Shared Powe
 [hr][/hr]
 [h2]Good to know[/h2]
 [list]
-[*]Multiplayer: every player needs the mod, because it adds the slots on each machine; a player without it sees clothing with missing slots. Eating, drinking, waste bags, swaps and charging run on the host, and the game sends the results with its own updates. No extra network traffic.
+[*]Multiplayer: every player needs the mod, because it adds the slots on each machine; a player without it sees clothing with missing slots. Eating, drinking, waste bags, swaps and charging happen on the host's game; everyone sees the results as usual.
 [*]0.5.0 moved the uniform's storage slots behind its own slots. A uniform saved before that loads with the two groups swapped: open it and drag the items back.
 [/list]
 
@@ -92,8 +92,8 @@ Developed with the use of generative AI, and tokens aren't free. Buy me a coffee
 [url=https://ko-fi.com/xceled]ko-fi.com/xceled[/url]
   </Description>
   <ChangeLog>
-v0.7.3
-- The Aegis helmet is now left alone too, and the Aegis suit is also recognised by name.
+v0.7.4
+- Clearer settings descriptions and Workshop page: every setting now says what it does in plain words.
 </ChangeLog>
   <WorkshopHandle>3809431633</WorkshopHandle>
   <Tags />

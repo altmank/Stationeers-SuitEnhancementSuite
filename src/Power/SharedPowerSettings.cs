@@ -22,18 +22,17 @@ internal sealed class SharedPowerSettings
     public SharedPowerSettings(ConfigFile config)
     {
         _enabled = config.Bind(Section, "Enabled", true,
-            "On: batteries in the two Shared Power slots of the worn advanced suit (Hardsuit, HARM suit) charge the " +
-            "other batteries you carry (host only). Off: the slots only hold batteries. The slots exist either way. " +
-            "Default: on.");
+            "On: batteries in the two Shared Power slots of your worn Hardsuit or HARM suit charge the other " +
+            "batteries you carry. Off: those slots just hold batteries. Only the host's game does this in multiplayer.");
         _rate = config.Bind(Section, "Transfer Rate", 500d, new ConfigDescription(
-            $"W per battery ({Describe(RateRange)}): the most each battery receives per power tick (twice a " +
-            "second), the unit the game uses for the Battery Cell Charger's 500 W. Default 500.", RateRange));
+            $"Watts ({Describe(RateRange)}). The most power each of your other batteries receives from the Shared " +
+            "Power batteries every half second. 500 matches the Battery Cell Charger.", RateRange));
         _loss = config.Bind(Section, "Loss", 0d, new ConfigDescription(
-            $"Percent ({Describe(LossRange)}) of the energy taken from a Shared Power battery that is lost on the " +
-            "way. 20 means 100 J taken, 80 J arrive. Default 0.", LossRange));
+            $"Percent ({Describe(LossRange)}) of the power drawn from a Shared Power battery that is lost before it " +
+            "reaches the other batteries. 20 means 100 J drawn, 80 J charged.", LossRange));
         _chargeSuitBattery = config.Bind(Section, "Charge Suit Battery", true,
-            "On: the worn suit's battery is charged first. Off: the suit battery is left alone and only hands, " +
-            "helmet, tools and the rest are charged. Default: on.");
+            "On: your suit's own battery is charged first. Off: it is left alone and only the batteries of what " +
+            "you hold, your helmet, tools and belt are charged.");
     }
 
     public bool Enabled => _enabled.Value;
