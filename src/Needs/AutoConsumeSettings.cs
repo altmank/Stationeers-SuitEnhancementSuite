@@ -26,28 +26,27 @@ internal sealed class AutoConsumeSettings
     public AutoConsumeSettings(ConfigFile config)
     {
         _enabled = config.Bind(Section, "Enabled", true,
-            "On: the Water, Food and Waste slots of the worn suit are drunk from, eaten from and used automatically, " +
-            "and refilled from the player's inventory as the Auto Swap section allows (host only). " +
-            "Off: the three slots are storage only and nothing is swapped. The slots exist either way. Default: on.");
+            "On: your suit's Water, Food and Waste slots drink, eat and use the bag for you, and refill from your " +
+            "inventory as the Auto Swap settings allow. Off: they are just storage and nothing happens by itself. " +
+            "Only the host's game does this in multiplayer.");
         _foodMargin = config.Bind(Section, "Food Top-Off Margin", 1d, new ConfigDescription(
-            $"Percent ({Describe(MarginRange)}). Eat from the Food slot once at least this share of the stomach " +
-            "(nutrition capacity) is empty. Default 1 keeps the player topped off; 75 eats only below 25 %.",
+            $"Percent ({Describe(MarginRange)}). Eat from the Food slot once your stomach is at least this percent " +
+            "empty. 1 keeps you full all the time; 75 waits until you are below 25 % full.",
             MarginRange));
         _waterMargin = config.Bind(Section, "Water Top-Off Margin", 1d, new ConfigDescription(
-            $"Percent ({Describe(MarginRange)}). Drink from the Water slot once at least this share of the current " +
-            "hydration capacity (which varies with food quality) is empty. Default 1 keeps the player topped off; " +
-            "75 drinks only below 25 %.", MarginRange));
+            $"Percent ({Describe(MarginRange)}). Drink from the Water slot once you are at least this percent " +
+            "short of a full drink. 1 keeps you full all the time; 75 waits until you are below 25 % full.", MarginRange));
         _hungerFallback = config.Bind(Section, "Hunger Fallback", 25d, new ConfigDescription(
-            $"Percent of nutrition ({Describe(FallbackRange)}). Whole-unit food (raw crops, cooked vegetables) is " +
-            "eaten only when all of its nutrition fits, so nothing is wasted; a pumpkin fills the whole stomach, so " +
-            "it would fit only when empty. Below this nutrition level a whole unit is eaten anyway and the overflow " +
-            "is lost, exactly as when eaten by hand. 0 never wastes. Default 25.", FallbackRange));
+            $"Percent ({Describe(FallbackRange)}). A raw crop or cooked vegetable is only eaten when you have room " +
+            "for all of it, so none is wasted. A pumpkin fills a whole stomach, so you would wait until you were " +
+            "empty. Below this percent of food left, it is eaten anyway and the extra is lost, as when you eat by " +
+            "hand. 0 never wastes food.", FallbackRange));
         _cooldown = config.Bind(Section, "Cooldown", 3d, new ConfigDescription(
-            $"Seconds ({Describe(CooldownRange)}). Minimum real time between two automatic bites of the same need " +
-            "(food, water or waste) for the same player. Default 3.", CooldownRange));
+            $"Seconds ({Describe(CooldownRange)}). Least time between two automatic bites, two drinks or two " +
+            "waste-bag uses for the same player.", CooldownRange));
         _wasteThreshold = config.Bind(Section, "Waste Threshold", 25d, new ConfigDescription(
-            $"Percent ({Describe(WasteThresholdRange)}). Use the Waste slot's bag once the waste need passes this " +
-            "percent. 25 is the earliest the game allows by hand. Default 25.", WasteThresholdRange));
+            $"Percent ({Describe(WasteThresholdRange)}). Use the Waste slot's bag once your waste is above this. " +
+            "25 is the earliest the game lets you go by hand.", WasteThresholdRange));
     }
 
     public bool Enabled => _enabled.Value;

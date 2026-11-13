@@ -1,5 +1,5 @@
 # Protected suites: `lane.ps1 land` runs each on the merged tree and refuses the land if any fails. One per line: `name | command`,
 # run by pwsh from the repo root, exit 0 = pass. STATIONEERS_DIR (the game install) comes from the environment.
-unit | dotnet test tests/SuitEnhancementSuite.Tests --nologo
+unit | dotnet test tests/SuitEnhancementSuite.Tests --nologo | nocache
 build | Remove-Item -Recurse -Force src/obj, src/bin -ErrorAction SilentlyContinue; pwsh -NoProfile -File ./build.ps1 | nocache
 keys | pwsh -NoProfile -File ./tools/tests/no-key-reads.ps1

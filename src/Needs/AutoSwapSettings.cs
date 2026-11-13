@@ -14,17 +14,17 @@ internal sealed class AutoSwapSettings
         _toggles =
         [
             (NeedSlot.Water, config.Bind(Section, "Water", true,
-                "On: when the worn suit's Water slot is empty or holds an empty container, the fullest water container " +
-                "the player carries (not in hand) is moved in, and the empty one goes where it came from (or to a free inventory " +
-                "slot). Needs Auto Consume Enabled. Default: on.")),
+                "On: when your suit's Water slot is empty or holds an empty bottle, the fullest bottle you carry " +
+                "(not in your hands) moves in, and the empty one goes back where the new one came from, or into a " +
+                "free slot. Works only while Auto Consume Enabled is on.")),
             (NeedSlot.Food, config.Bind(Section, "Food", true,
-                "On: when the worn suit's Food slot is empty or holds something inedible (rotten food), the best food " +
-                "the player carries (not in hand) is moved in: the highest food quality first, portioned food before whole crops. " +
-                "Needs Auto Consume Enabled. Default: on.")),
+                "On: when your suit's Food slot is empty or holds rotten food, the best food you carry (not in your " +
+                "hands) moves in: meals first, then canned food, cooked vegetables, raw crops. " +
+                "Works only while Auto Consume Enabled is on.")),
             (NeedSlot.Waste, config.Bind(Section, "Waste", true,
-                "On: when the worn suit's Waste slot is empty or holds a full bag, an open bag that is not full (the " +
-                "fullest first) or one folded bag the player carries (not in hand) is moved in; a full bag goes where the new one " +
-                "came from (or to a free inventory slot). Needs Auto Consume Enabled. Default: on.")),
+                "On: when your suit's Waste slot is empty or holds a full bag, a part-filled bag you carry (the " +
+                "fullest first) or else a folded Waste Bag moves in; the full bag goes back where the new one came " +
+                "from, or into a free slot. Works only while Auto Consume Enabled is on.")),
         ];
     }
 
