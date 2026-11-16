@@ -1,5 +1,5 @@
-# Host dry run of skip-aegis-poll.ps1 (P98): the real poll hook runs every step against the recorded replies and log of a finished run (a
-# Copy-RunForRead.ps1 copy), with a fake clock, so each code path executes, not just parses. Fakes: Invoke-AegisSg (answers from the run's
+# Host dry run of skip-aegis-poll.ps1 (P98): the real poll hook runs every step against the recorded replies and log of a finished run (the run
+# folder itself, read only: a Copy-RunForRead.ps1 copy has only the logs, no sp-*.json replies, and is refused), with a fake clock, so each code path executes, not just parses. Fakes: Invoke-AegisSg (answers from the run's
 # sp-*.json by call; defined in a copy of sgpipe.ps1 that the poll dot-sources), Invoke-Rig (runs the guest script block locally), Get-Date
 # (a clock the harness advances 5 s a tick), Rig-Log, Set-RigPhase, Stop-Rig. The real sgpipe.ps1 helpers (Find-AegisSlot, Get-AegisRow) are used.
 #   pwsh -NoProfile -File tests\vm\skip-aegis-poll-dry.ps1 -RunCopy <copy of a run folder> -Mode a|b [-Scenario ok|inject|withhold]
@@ -21,6 +21,10 @@ if (-not $RigVM) { $RigVM = Get-SiblingRepo 'RigVM' }
 if (-not $World) { $World = Join-Path (Get-EnvRoot 'STATIONEERS_WORLDS' 'the shared test-worlds folder') 'two-docks' }
 $work = Join-Path ([IO.Path]::GetTempPath()) "skipdry-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
 New-Item -ItemType Directory -Force "$work\host\aegis", "$work\res" | Out-Null
+if (-not (Get-ChildItem $RunCopy -Filter 'sp-*.json' -ErrorAction SilentlyContinue)) {
+    Remove-Item -Recurse -Force $work -ErrorAction SilentlyContinue
+    throw "no sp-*.json in the run folder: pass the run folder itself (a Copy-RunForRead copy has only the logs, not the recorded replies)"
+}
 $log = Join-Path $work 'LogOutput.log'
 Copy-Item "$RunCopy\LogOutput.log" $log
 $real = git -C $RigVM show 'HEAD:host/aegis/sgpipe.ps1'
@@ -41,7 +45,16 @@ foreach ($f in Get-ChildItem $RunCopy -Filter 'sp-*.json') {
     }
 }
 $withholdRef = ''
-if ($Scenario -eq 'withhold') { $withholdRef = "$(@($replies.Values | ? { $_.result -and $_.result.PSObject.Properties['prefab_name'] -and $_.result.prefab_name -eq 'ItemSuitAegis' -and $_.result.PSObject.Properties['reference_id'] })[0].result.reference_id)" }
+if ($Scenario -eq 'withhold') {
+    # inspect slots replies carry the prefab at result.device.prefab_name; contents replies at result.prefab_name
+    $aegis = @($replies.Values | ? {
+            $_.result -and $_.result.PSObject.Properties['reference_id'] -and (
+                ($_.result.PSObject.Properties['device'] -and $_.result.device -and $_.result.device.PSObject.Properties['prefab_name'] -and $_.result.device.prefab_name -eq 'ItemSuitAegis') -or
+                ($_.result.PSObject.Properties['prefab_name'] -and $_.result.prefab_name -eq 'ItemSuitAegis')) })
+    if ($aegis.Count -eq 0) { throw 'withhold scenario cannot be set up: no recorded reply for an ItemSuitAegis suit in this run, so nothing would be withheld' }
+    $withholdRef = "$($aegis[0].result.reference_id)"
+    if (-not $withholdRef) { throw 'withhold scenario cannot be set up: the Aegis suit reply has no reference_id' }
+}
 $script:playerCalls = 0
 $script:fakeNow = [datetime]'2026-11-11T15:00:00'
 $script:phase = ''; $script:stopped = ''
