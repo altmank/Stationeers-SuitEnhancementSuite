@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **The log is quieter:** extra lines only when you turn them on under Logging, Verbose.
+- **New console command `ses`** to check what the mod is doing. `ses diag` writes a summary to the log, and
+  `ses log` turns the extra log lines on or off for the current session.
+- **Clearer problem messages:** a problem now says which player or item it is about and what the mod does next.
+
 ## 0.7.4
 
 - **Clearer settings descriptions and Workshop page:** every setting now says what it does in plain words.

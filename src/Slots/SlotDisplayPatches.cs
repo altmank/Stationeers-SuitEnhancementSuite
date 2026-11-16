@@ -24,8 +24,16 @@ internal static class SlotNamesLocalizationPatch
                 if (LabelledSlots.TryGet(key, out var label, out _))
                     names[Animator.StringToHash(key)] = label;
         }
-        catch (Exception e) { Plugin.Log?.LogDebug($"Slot labels unavailable: {e.Message}"); }
+        catch (Exception e)
+        {
+            if (Reported.Count < MaxReported && Reported.Add(e.GetType().Name + ": " + e.Message))
+                Plugin.Log?.LogWarning($"Slot labels unavailable (reported once): {e}. Slots show placeholder names.");
+        }
     }
+
+    private const int MaxReported = 16;
+
+    private static readonly HashSet<string> Reported = new();
 }
 
 /// <summary>Slot.Initialize resets the icon from the slot class; the labelled slots keep theirs.</summary>

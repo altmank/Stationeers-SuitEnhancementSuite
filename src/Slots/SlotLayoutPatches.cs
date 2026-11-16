@@ -20,9 +20,13 @@ internal static class ThingAwakeSlotsPatch
     private static void Prefix(Thing __instance)
     {
         if (__instance is not DynamicThing clothing) return;
-        if (SuitSlotLayout.AddSlots(clothing))
-            Plugin.Log.LogDebug($"Added suit slots to {clothing.PrefabName}.");
+        if (!SuitSlotLayout.AddSlots(clothing)) return;
+        Added++;
+        if (Plugin.Verbose.On(LogArea.Slots)) Plugin.Log.LogInfo($"slots: added suit slots to {clothing.PrefabName}.");
     }
+
+    /// <summary>Clothing that got slots when it was created, for <c>ses diag</c>.</summary>
+    internal static int Added;
 }
 
 /// <summary>

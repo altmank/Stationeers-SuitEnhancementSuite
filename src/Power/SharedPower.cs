@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Assets.Scripts;
 using Assets.Scripts.Objects;
 using Assets.Scripts.Objects.Clothing;
@@ -26,6 +27,8 @@ internal sealed class SharedPower(SharedPowerSettings settings)
     private readonly List<BatteryCell> _targets = new(16);
     private readonly List<BatteryCell> _sources = new(2);
     private readonly HashSet<string> _reportedFaults = new();
+    private bool _capReported;
+    private string _lastFault;
 
     /// <summary>One power tick for every living player. Never throws: a failure is logged once per distinct message.</summary>
     public void Tick()
@@ -47,13 +50,13 @@ internal sealed class SharedPower(SharedPowerSettings settings)
                 }
                 catch (Exception e)
                 {
-                    ReportOnce(e);
+                    ReportOnce(e, human, "on the next tick");
                 }
             }
         }
         catch (Exception e)
         {
-            ReportOnce(e);
+            ReportOnce(e, null, "on the next tick");
         }
     }
 
@@ -129,10 +132,45 @@ internal sealed class SharedPower(SharedPowerSettings settings)
         _plan.AddTarget(priority, new Charge(cell.PowerStored, cell.PowerMaximum));
     }
 
-    private void ReportOnce(Exception e)
+    private void ReportOnce(Exception e, Human human, string retry)
     {
         var key = e.GetType().Name + ": " + e.Message;
-        if (_reportedFaults.Count >= MaxReportedFaults || !_reportedFaults.Add(key)) return;
-        Plugin.Log.LogWarning($"Shared power skipped a player or tick (reported once): {e}");
+        if (_reportedFaults.Count >= MaxReportedFaults)
+        {
+            if (_capReported) return;
+            _capReported = true;
+            Plugin.Log.LogWarning($"Shared power has reported {MaxReportedFaults} different problems; new ones are no longer logged.");
+            return;
+        }
+        _lastFault = key;
+        if (!_reportedFaults.Add(key)) return;
+        Plugin.Log.LogWarning($"Shared power skipped {(human == null ? "every player" : LogNames.Of(human))} this tick and retries {retry} (reported once): {e}");
+    }
+
+    /// <summary>Per living player wearing Shared Power slots: the cells and their charge, for <c>ses diag</c>.</summary>
+    internal void Describe(StringBuilder text)
+    {
+        var seen = 0;
+        foreach (var human in Human.AllHumans)
+        {
+            if (human == null || human.State != EntityState.Alive) continue;
+            if (human.SuitSlot?.Get() is not { Slots: not null } worn) continue;
+            var cells = false;
+            for (var i = 0; i < worn.Slots.Count; i++)
+            {
+                var slot = worn.Slots[i];
+                if (slot is null || !SlotKeys.IsSharedPower(slot.StringKey)) continue;
+                if (!cells) text.Append("\n    ").Append(LogNames.Of(human)).Append(" in ").Append(LogNames.Of(worn)).Append(':');
+                cells = true;
+                text.Append("\n      ");
+                if (slot.Get() is BatteryCell cell)
+                    text.Append(LogNames.Of(cell)).Append(' ').Append(LogText.Number(cell.PowerStored, 1)).Append(" of ")
+                        .Append(LogText.Number(cell.PowerMaximum, 1)).Append(" J");
+                else text.Append("empty Shared Power slot");
+            }
+            if (cells) seen++;
+        }
+        if (seen == 0) text.Append("no living player wears Shared Power slots");
+        text.Append("\n    last fault: ").Append(_lastFault ?? "none");
     }
 }

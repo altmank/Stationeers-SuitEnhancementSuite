@@ -8,8 +8,9 @@
 #   -Run b   SES + StationGod, no Aegis: the player wears a Hardsuit with water and food in its SES slots, needs lowered. Passes when the
 #            suit has the SES slots, an "Auto consume:" line appears and SES logs no error.
 #
-# The consume line is a Debug line (src\Needs\AutoConsumer.cs): the run sets BepInEx [Logging.Disk] LogLevels to include Debug (the guest's
-# BepInEx.cfg is backed up and put back by vm-client-run). The verdict is tests\vm\skip-aegis-verdict.ps1 (host-tested by
+# The consume, swap and shared-power lines are Info lines behind SES's [Logging] Verbose switch (src\Pure\VerboseFlags.cs): the run stages
+# SES's config with Verbose = consume,swap,power so they appear. BepInEx [Logging.Disk] LogLevels still includes Debug for the other mods
+# (the guest's config files are backed up and put back by vm-client-run). The verdict is tests\vm\skip-aegis-verdict.ps1 (host-tested by
 # skip-aegis-verdict.tests.ps1); a missing capture fails it.
 #
 #   pwsh -NoProfile -File _alpha\tools\run-hidden.ps1 -Log <log> tests\vm\skip-aegis-proof.ps1 -Run a -WorkDir <temp folder> -ExpectedMinutes 12
@@ -95,6 +96,7 @@ $env:SES_PROOF_WORLD = $World
 $cfg = @{
     'net.xceled.stationeers.stationgodmcp.cfg' = "[Pipe]`r`n`r`nName = $($env:SES_PROOF_PIPE)`r`n`r`n[Remote MCP]`r`n`r`nEnabled = false`r`n"
     'BepInEx.cfg' = "[Logging.Disk]`r`n`r`nLogLevels = Fatal, Error, Warning, Message, Info, Debug`r`n"
+    'net.xceled.stationeers.suitenhancementsuite.cfg' = "[Logging]`r`n`r`nVerbose = consume,swap,power`r`n"
 } | ConvertTo-Json -Compress
 $ph = [ordered]@{ bepinex = 'Chainloader startup complete'; mods = '\[Global\]: Took \S+ to load mods'; ses = 'Suit Enhancement Suite \d+\.\d+\.\d+ loaded' }
 $req = @('bepinex', 'mods', 'ses', 'proof-world', 'proof-done')
