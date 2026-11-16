@@ -52,7 +52,7 @@ internal sealed class SesCommand : CommandBase
         }
         catch (Exception e)
         {
-            return $"ses {verb} failed: {e.Message}";
+            return $"{verb} failed: {e.Message}";
         }
     }
 
@@ -63,7 +63,7 @@ internal sealed class SesCommand : CommandBase
         var on = args.Length == 3 && args[2].Equals("on", StringComparison.OrdinalIgnoreCase);
         var off = args.Length == 3 && args[2].Equals("off", StringComparison.OrdinalIgnoreCase);
         if (!on && !off) return "usage: ses log | ses log <area>|all on|off";
-        if (!flags.TrySet(args[1], on, out var refusal)) return $"ses log: {refusal}";
+        if (!flags.TrySet(args[1], on, out var refusal)) return $"log: {refusal}";
         Plugin.Log.LogInfo($"Extra log lines for this session: {flags.Summary()}");
         return $"extra log lines: {flags.Summary()} (this session only; the config file is unchanged)";
     }
@@ -73,7 +73,7 @@ internal sealed class SesCommand : CommandBase
         LogArea? only = null;
         if (args.Length > 1 && !args[1].Equals("all", StringComparison.OrdinalIgnoreCase))
         {
-            if (!VerboseFlags.TryParseArea(args[1], out var area, out var refusal)) return $"ses diag: {refusal}";
+            if (!VerboseFlags.TryParseArea(args[1], out var area, out var refusal)) return $"diag: {refusal}";
             only = area;
         }
         var text = new StringBuilder();
@@ -90,7 +90,7 @@ internal sealed class SesCommand : CommandBase
         if (only is null or LogArea.Hud) DescribeHud(text);
         var block = text.ToString();
         Plugin.Log.LogInfo(block);
-        return $"ses diag: {Lines(block)} lines in the BepInEx log";
+        return $"diag: {Lines(block)} lines in the BepInEx log";
     }
 
     private static void DescribeNeeds(StringBuilder text)

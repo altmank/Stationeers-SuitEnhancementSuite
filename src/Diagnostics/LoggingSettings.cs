@@ -18,7 +18,7 @@ internal sealed class LoggingSettings
     {
         _verbose = config.Bind(Section, Key, Default,
             "Extra log lines for finding problems: off, all, or a comma list of consume, swap, power, slots, hud. " +
-            "Off keeps the log quiet.");
+            "Off keeps the log quiet. Power adds no log lines yet; it only adds to the ses diag report.");
     }
 
     public string Value => _verbose.Value;

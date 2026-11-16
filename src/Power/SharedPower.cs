@@ -50,13 +50,13 @@ internal sealed class SharedPower(SharedPowerSettings settings)
                 }
                 catch (Exception e)
                 {
-                    ReportOnce(e, LogNames.Of(human), "on the next tick");
+                    ReportOnce(e, human, "on the next tick");
                 }
             }
         }
         catch (Exception e)
         {
-            ReportOnce(e, "every player", "on the next tick");
+            ReportOnce(e, null, "on the next tick");
         }
     }
 
@@ -132,7 +132,7 @@ internal sealed class SharedPower(SharedPowerSettings settings)
         _plan.AddTarget(priority, new Charge(cell.PowerStored, cell.PowerMaximum));
     }
 
-    private void ReportOnce(Exception e, string who, string retry)
+    private void ReportOnce(Exception e, Human human, string retry)
     {
         var key = e.GetType().Name + ": " + e.Message;
         if (_reportedFaults.Count >= MaxReportedFaults)
@@ -144,7 +144,7 @@ internal sealed class SharedPower(SharedPowerSettings settings)
         }
         _lastFault = key;
         if (!_reportedFaults.Add(key)) return;
-        Plugin.Log.LogWarning($"Shared power skipped {who} this tick and retries {retry} (reported once): {e}");
+        Plugin.Log.LogWarning($"Shared power skipped {(human == null ? "every player" : LogNames.Of(human))} this tick and retries {retry} (reported once): {e}");
     }
 
     /// <summary>Per living player wearing Shared Power slots: the cells and their charge, for <c>ses diag</c>.</summary>

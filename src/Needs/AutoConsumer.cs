@@ -46,7 +46,7 @@ internal sealed class AutoConsumer(AutoConsumeSettings settings, AutoSwapSetting
                 }
                 catch (Exception e)
                 {
-                    ReportOnce(e, LogNames.Of(human));
+                    ReportOnce(e, human);
                 }
             }
             if (++_passes % PrunePasses != 0) return;
@@ -59,7 +59,7 @@ internal sealed class AutoConsumer(AutoConsumeSettings settings, AutoSwapSetting
         }
         catch (Exception e)
         {
-            ReportOnce(e, "every player");
+            ReportOnce(e, null);
         }
     }
 
@@ -107,7 +107,7 @@ internal sealed class AutoConsumer(AutoConsumeSettings settings, AutoSwapSetting
             human.DisplayName, amount, prefab, need.NeedName, before, need.Level(human),
             LogNames.Of(human), LogText.Thing(prefab, itemId)));
 
-    private void ReportOnce(Exception e, string who)
+    private void ReportOnce(Exception e, Human human)
     {
         var key = e.GetType().Name + ": " + e.Message;
         if (_reportedFaults.Count >= MaxReportedFaults)
@@ -119,7 +119,7 @@ internal sealed class AutoConsumer(AutoConsumeSettings settings, AutoSwapSetting
         }
         _lastFault = key;
         if (!_reportedFaults.Add(key)) return;
-        Plugin.Log.LogWarning($"Auto consume skipped {who} this pass and retries in {PassSeconds} s (reported once): {e}");
+        Plugin.Log.LogWarning($"Auto consume skipped {(human == null ? "every player" : LogNames.Of(human))} this pass and retries in {PassSeconds} s (reported once): {e}");
     }
 
     /// <summary>Per living player and need slot: the item, the waits, and the last refusal, for <c>ses diag</c>.</summary>
