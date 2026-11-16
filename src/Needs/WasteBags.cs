@@ -15,6 +15,8 @@ internal static class WasteBags
     // SanitationStack.UnfoldAndFill: the new bag appears half a metre in front of the player.
     private const float UnfoldDistance = 0.5f;
 
+    private static readonly ReportLatch NoSlotForBag = new();
+
     public static StepResult Use(Slot slot, PlayerInventory player, ConsumptionPolicy policy, out float amount)
     {
         amount = 0f;
@@ -60,8 +62,10 @@ internal static class WasteBags
         }
         if (rest == null) OnServer.MoveToWorld(stack, stack.Position, stack.Rotation, Vector3.zero, Vector3.zero);
         else Moves.ToSlot(stack, rest);
-        if (!Moves.ToSlot(packet, slot) && !player.TryStow(packet))
-            Plugin.Log.LogWarning($"Auto consume: the waste bag unfolded for {human.DisplayName} found no slot and lies at their feet.");
+        if (Moves.ToSlot(packet, slot) || player.TryStow(packet)) NoSlotForBag.Clear(human.ReferenceId);
+        else if (NoSlotForBag.TryRaise(human.ReferenceId))
+            Plugin.Log.LogWarning($"Auto consume: the waste bag unfolded for {human.DisplayName} ({LogNames.Of(human)}) found no slot " +
+                                  "and lies at their feet. Reported once until a bag next fits.");
         stack.DecrementQuantity();
         amount = packet.Quantity / packet.MaxQuantity;
         return StepResult.Done;

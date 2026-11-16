@@ -36,9 +36,16 @@ internal static class AutoSwapper
             _ => false,
         };
         if (plan == SwapPlan.Blocked) return StepResult.NoRoomFor(spent);
-        if (done) Report(need, player, spentName, target.Get(), source);
+        if (done)
+        {
+            NoSlot.Clear(player.Human.ReferenceId);
+            if (Plugin.Verbose.On(LogArea.Swap)) Report(need, player, spentName, target.Get(), source);
+        }
         return StepResult.From(done);
     }
+
+    // Warned once per player until a swap next succeeds, so a stuck item is not reported on every pass.
+    private static readonly ReportLatch NoSlot = new();
 
     private static bool SplitIn(DynamicThing stack, Slot target)
     {
@@ -50,13 +57,15 @@ internal static class AutoSwapper
     {
         if (Moves.Swap(spent, target, replacement, source)) return true;
         // A refused move can leave the spent item in the world; it goes back into the inventory if there is room.
-        if (spent.ParentSlot == null && !player.TryStow(spent))
-            Plugin.Log.LogWarning($"Auto swap: {spent.PrefabName} of {player.Human.DisplayName} found no slot and lies at their feet.");
+        if (spent.ParentSlot == null && !player.TryStow(spent) && NoSlot.TryRaise(player.Human.ReferenceId))
+            Plugin.Log.LogWarning($"Auto swap: {LogNames.Of(spent)} of {player.Human.DisplayName} ({LogNames.Of(player.Human)}) " +
+                                  "found no slot and lies at their feet. Reported once until a swap next succeeds.");
         return false;
     }
 
     private static void Report(NeedSlot need, PlayerInventory player, string spentName, DynamicThing now, Slot source) =>
         Plugin.Log.LogInfo($"Auto swap: {player.Human.DisplayName}'s {need.SlotName} slot " +
                            $"{(spentName == null ? "was empty" : "held spent " + spentName)}, now holds {now?.PrefabName} " +
-                           $"from {source?.Parent?.PrefabName ?? "?"}.");
+                           $"from {source?.Parent?.PrefabName ?? "?"}. " +
+                           $"(player {LogNames.Of(player.Human)}, item {LogNames.Of(now)}, from {LogNames.Of(source?.Parent)})");
 }

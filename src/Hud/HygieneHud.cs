@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts;
 using Assets.Scripts.Objects.Entities;
@@ -23,6 +24,8 @@ internal sealed class HygieneHud
     private Text _legacyValue;
     private float _nextSearchTime;
     private int _lastPercent = -1;
+    private readonly HashSet<string> _reported = new();
+    private const int MaxReported = 16;
 
     public IEnumerator Run()
     {
@@ -36,10 +39,20 @@ internal sealed class HygieneHud
                 var human = Human.LocalHuman;
                 if (human != null) Show(Mathf.RoundToInt(human.HygieneRatio * 100f));
             }
-            catch (Exception e) { Plugin.Log?.LogDebug($"Native sanitation row unavailable: {e.Message}"); }
+            catch (Exception e) { ReportOnce(e); }
             yield return wait;
         }
     }
+
+    private void ReportOnce(Exception e)
+    {
+        var key = e.GetType().Name + ": " + e.Message;
+        if (_reported.Count >= MaxReported || !_reported.Add(key)) return;
+        Plugin.Log?.LogWarning($"Native sanitation row unavailable (reported once): {e}. The row stays hidden, retrying every 1 s.");
+    }
+
+    /// <summary>Which way the row got on screen, for <c>ses diag</c>.</summary>
+    internal static string Path { get; private set; } = "not attached yet";
 
     private void Show(int percent)
     {
@@ -88,7 +101,8 @@ internal sealed class HygieneHud
             (t.name.IndexOf("Title", StringComparison.OrdinalIgnoreCase) >= 0 ||
              t.name.IndexOf("Label", StringComparison.OrdinalIgnoreCase) >= 0));
         if (label != null) label.text = RowLabel;
-        Plugin.Log.LogInfo("[Suit Enhancement Suite] Activated vanilla PanelHygiene row.");
+        Path = "vanilla PanelHygiene row";
+        if (Plugin.Verbose.On(LogArea.Hud)) Plugin.Log.LogInfo("hud: activated vanilla PanelHygiene row.");
         EnableWasteRowBelow(panel);
         return true;
     }
@@ -119,7 +133,7 @@ internal sealed class HygieneHud
             graphic.enabled = true;
         if (wastePanel.parent is RectTransform parentRect)
             LayoutRebuilder.ForceRebuildLayoutImmediate(parentRect);
-        Plugin.Log.LogInfo("[Suit Enhancement Suite] Activated vanilla PanelWaste row for toilet need.");
+        if (Plugin.Verbose.On(LogArea.Hud)) Plugin.Log.LogInfo("hud: activated vanilla PanelWaste row for toilet need.");
     }
 
     private bool TryCloneLegacyRow()
@@ -137,6 +151,8 @@ internal sealed class HygieneHud
         var label = texts.FirstOrDefault(t => t != null && t.text != thirstLabel.text);
         _legacyValue = texts.LastOrDefault();
         if (label != null) label.text = RowLabel;
+        Path = "legacy row cloned from the thirst row";
+        if (Plugin.Verbose.On(LogArea.Hud)) Plugin.Log.LogInfo("hud: no vanilla rows, cloned the legacy thirst row.");
         return true;
     }
 
@@ -153,6 +169,8 @@ internal sealed class HygieneHud
         var label = clone.GetComponentsInChildren<TMP_Text>(true).FirstOrDefault(t => t != null && t != thirst);
         _value = clone.GetComponentsInChildren<TMP_Text>(true).LastOrDefault();
         if (label != null) label.text = RowLabel;
+        Path = "row cloned from the thirst row";
+        if (Plugin.Verbose.On(LogArea.Hud)) Plugin.Log.LogInfo("hud: no vanilla rows, cloned the thirst row.");
     }
 
     private static Transform FindAncestor(Transform start, string name)

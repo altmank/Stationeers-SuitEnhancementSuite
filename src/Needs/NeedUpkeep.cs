@@ -24,8 +24,16 @@ internal sealed class NeedUpkeep(NeedSlot need)
     {
         if (result.IsDone)
             _blocked.Clear(human.ReferenceId);
-        else if (result.IsBlocked && _blocked.TryRaise(human.ReferenceId))
-            Plugin.Log.LogWarning($"{human.DisplayName}'s {need.SlotName} slot was not {step}: no free inventory slot " +
-                                  $"for {result.Unplaced?.PrefabName}. Reported once until the slot next succeeds.");
+        else if (result.IsBlocked)
+        {
+            LastRefusal = $"{need.SlotName} slot not {step}: no free inventory slot for {LogNames.Of(result.Unplaced)}";
+            if (_blocked.TryRaise(human.ReferenceId))
+                Plugin.Log.LogWarning($"{human.DisplayName}'s {need.SlotName} slot was not {step}: no free inventory slot " +
+                                      $"for {LogNames.Of(result.Unplaced)} ({LogNames.Of(human)}). Reported once until the slot " +
+                                      $"next succeeds; it retries every {AutoConsumer.PassSeconds} s.");
+        }
     }
+
+    /// <summary>The last time this need was blocked, for <c>ses diag</c>; null until then.</summary>
+    public string LastRefusal { get; private set; }
 }
